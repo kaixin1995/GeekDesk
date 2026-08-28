@@ -124,7 +124,7 @@ namespace GeekDesk.Control.Windows
 
 
         private static System.Windows.Window window = null;
-        public static void Show()
+        public static new void Show()
         {
             if (window == null || !window.Activate())
             {

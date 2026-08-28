@@ -140,14 +140,14 @@ namespace GeekDesk.Control.Windows
             
         }
 
-        public static void Show()
+        public static new void Show()
         {
             if (window == null || !window.Activate())
             {
                 window = new GlobalColorPickerWindow();
             }
             window.Opacity = 1;
-            window.Show();
+            ((Window)window).Show();
             Keyboard.Focus(window);
         }
 

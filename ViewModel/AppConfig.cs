@@ -35,10 +35,10 @@ namespace GeekDesk.ViewModel
         private BitmapImage bitmapImage; //位图
         private byte[] imageByteArr; //背景图片 byte数组
         private string bacImgName = "系统默认";
-        private int cardOpacity = 10;  //默认0.1的不透明度  此处显示数值 * 100
+        private int cardOpacity = 85;  //默认0.85的不透明度
         private int bgOpacity = 100; // 背景图片不透明度 此处显示数值 * 100
         private int pannelOpacity = 100; //主面板不透明度 此处显示数值 * 100
-        private int pannelCornerRadius = 4;  //面板圆角 默认4
+        private int pannelCornerRadius = 12;  //面板圆角 默认12 (苹果风格)
         [field: NonSerialized]
         private ObservableCollection<IconInfo> selectedMenuIcons;
 
@@ -67,26 +67,26 @@ namespace GeekDesk.ViewModel
         private bool selfStartUped = false;  //是否已设置
         private bool pmModel = false; //性能模式
         private string textColor = "#000000"; //字体颜色
-        private double imgPanelWidth = (double)CommonEnum.IMAGE_PANEL_WIDTH;
-        private double imgPanelHeight = (double)CommonEnum.IMAGE_PANEL_HEIGHT;
-        private bool marginHide = false; //贴边隐藏
+        private double imgPanelWidth = 72;
+        private double imgPanelHeight = 72;
+        private bool marginHide = true; //贴边隐藏 (默认启用音速启动贴边)
         private bool appAnimation = false; //主窗口动画效果
         private int imageWidth = (int)CommonEnum.IMAGE_WIDTH; //图片宽度
         private int imageHeight = (int)CommonEnum.IMAGE_HEIGHT; //图片高度
 
-        private bool mouseMiddleShow = true;  //鼠标中键呼出 默认启用
+        private bool mouseMiddleShow = false;  //鼠标中键呼出 (已废弃)
 
         private bool showBarIcon = true; //显示托盘图标  默认显示
 
         private bool doubleOpen = false; //双击打开项目  默认关闭
 
-        private bool hoverMenu = false; //悬停切换菜单  默认关闭
+        private bool hoverMenu = true; //悬停切换菜单
 
         private BGStyle bgStyle = BGStyle.ImgBac; //背景风格
 
         private GradientBGParam gradientBGParam = null; //渐变背景参数
 
-        private bool? enableAppHotKey = true;  //可能为null 开启热键
+        private bool? enableAppHotKey = false;  //弱化热键依赖，贴边为主
         private bool? enableTodoHotKey = true; //可能为null 开启待办热键
 
         private bool enableColorPickerHotKey;  //新增 默认为false 不需要考虑null值
@@ -133,6 +133,7 @@ namespace GeekDesk.ViewModel
             }
         }
 
+        [JsonIgnore]
         public bool IconBatch_NoWrite
         {
             get
@@ -534,7 +535,7 @@ namespace GeekDesk.ViewModel
         {
             get
             {
-                if (imgPanelWidth == 0d) return (double)CommonEnum.IMAGE_PANEL_WIDTH;
+                if (imgPanelWidth == 0d || imgPanelWidth > 200) return 72d;
                 return imgPanelWidth;
             }
             set
@@ -548,7 +549,7 @@ namespace GeekDesk.ViewModel
         {
             get
             {
-                if (imgPanelHeight == 0d) return (double)CommonEnum.IMAGE_PANEL_HEIGHT;
+                if (imgPanelHeight == 0d || imgPanelHeight > 200) return 72d;
                 return imgPanelHeight;
             }
             set
@@ -724,15 +725,7 @@ namespace GeekDesk.ViewModel
         {
             get
             {
-                if (blurEffect)
-                {
-                    BlurValue = 100;
-                }
-                else
-                {
-                    BlurValue = 0;
-                }
-                return blurValue;
+                return blurEffect ? 100 : 0;
             }
             set
             {
@@ -750,15 +743,9 @@ namespace GeekDesk.ViewModel
             set
             {
                 blurEffect = value;
-                if (blurEffect)
-                {
-                    BlurValue = 100;
-                }
-                else
-                {
-                    BlurValue = 0;
-                }
+                blurValue = blurEffect ? 100 : 0;
                 OnPropertyChanged("BlurEffect");
+                OnPropertyChanged("BlurValue");
             }
         }
         public string CustomIconUrl
@@ -826,6 +813,7 @@ namespace GeekDesk.ViewModel
             }
         }
 
+        [JsonIgnore]
         public ObservableCollection<IconInfo> SelectedMenuIcons
         {
             get
@@ -917,6 +905,7 @@ namespace GeekDesk.ViewModel
         }
 
 
+        [JsonIgnore]
         public BitmapImage BitmapImage
         {
             get

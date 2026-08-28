@@ -10,18 +10,22 @@ namespace GeekDesk.Converts
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             bool param = false;
-            if (value != null)
+            if (value != null && value is bool b)
             {
-                param = (bool)value;
+                param = b;
             }
             if (param)
             {
                 return Visibility.Visible;
-            } else
-            {
-                return (Visibility)parameter;
             }
-            
+            else
+            {
+                if (parameter is Visibility v)
+                {
+                    return v;
+                }
+                return Visibility.Collapsed;
+            }
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

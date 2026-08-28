@@ -1,4 +1,4 @@
-﻿using GeekDesk.Constant;
+using GeekDesk.Constant;
 using GeekDesk.Control.Other;
 using GeekDesk.ViewModel;
 using HandyControl.Data;
@@ -10,172 +10,138 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using static GeekDesk.Control.Other.GlobalMsgNotification;
 
-/// <summary>
-/// 提取一些代码
-/// </summary>
 namespace GeekDesk.Util
 {
     class CommonCode
     {
+        private static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings
+        {
+            Formatting = Formatting.Indented,
+            NullValueHandling = NullValueHandling.Ignore,
+            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+        };
 
         /// <summary>
-        /// 获取app 数据
+        /// 获取 app 数据 (采用 JSON 存储与读取，同时兼容尝试读取旧版数据)
         /// </summary>
         /// <returns></returns>
         public static AppData GetAppDataByFile()
         {
-            AppData appData;
+            AppData appData = null;
             if (!File.Exists(Constants.DATA_FILE_PATH))
             {
-                using (FileStream fs = File.Create(Constants.DATA_FILE_PATH)) { }
                 appData = new AppData();
                 SaveAppData(appData, Constants.DATA_FILE_PATH);
                 return appData;
             }
-            else
-            {
-                try
-                {
-                    using (FileStream fs = new FileStream(Constants.DATA_FILE_PATH, FileMode.Open))
-                    {
-                        BinaryFormatter bf = new BinaryFormatter();
-                        appData = bf.Deserialize(fs) as AppData;
 
-                        //将菜单密码写入文件
-                        if (!string.IsNullOrEmpty(appData.AppConfig.MenuPassword))
-                        {
-                            SavePassword(appData.AppConfig.MenuPassword);
-                        }
-                        return appData;
-                    }
-                }
-                catch
+            try
+            {
+                string json = File.ReadAllText(Constants.DATA_FILE_PATH, Encoding.UTF8);
+                if (!string.IsNullOrWhiteSpace(json))
                 {
-                    DirectoryInfo dirInfo = new DirectoryInfo(Constants.DATA_FILE_BAK_DIR_PATH);
-                    FileInfo[] files = dirInfo.GetFiles()
-                        .Where(f => f.Extension.Equals(".bak", StringComparison.OrdinalIgnoreCase)).ToArray(); ;
-                    if (files.Length > 0)
+                    appData = JsonConvert.DeserializeObject<AppData>(json, JsonSettings);
+                }
+
+                if (appData != null)
+                {
+                    // 将菜单密码写入文件
+                    if (!string.IsNullOrEmpty(appData.AppConfig?.MenuPassword))
                     {
-                        FileInfo[] sortedFiles = files.OrderByDescending(file => file.CreationTime).ToArray();
-                        //循环获取可用备份文件
-                        string bakFilePath = "";
-                        foreach (FileInfo bakFile in sortedFiles)
+                        SavePassword(appData.AppConfig.MenuPassword);
+                    }
+
+                    // 确保每个 MenuInfo 的 children 和属性不为空
+                    FixMenuHierarchy(appData.MenuList);
+                    return appData;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogUtil.WriteErrorLog(ex, "读取主数据文件异常，尝试从备份恢复...");
+            }
+
+            // 若主文件读取失败，则从备份目录读取
+            DirectoryInfo dirInfo = new DirectoryInfo(Constants.DATA_FILE_BAK_DIR_PATH);
+            if (dirInfo.Exists)
+            {
+                FileInfo[] files = dirInfo.GetFiles()
+                    .Where(f => f.Extension.Equals(".bak", StringComparison.OrdinalIgnoreCase)).ToArray();
+                if (files.Length > 0)
+                {
+                    FileInfo[] sortedFiles = files.OrderByDescending(file => file.CreationTime).ToArray();
+                    foreach (FileInfo bakFile in sortedFiles)
+                    {
+                        try
                         {
-                            if (!Directory.Exists(Constants.DATA_FILE_TEMP_DIR_PATH)) { Directory.CreateDirectory(Constants.DATA_FILE_TEMP_DIR_PATH); }
-                            bakFilePath = Constants.DATA_FILE_TEMP_DIR_PATH + "\\" + bakFile.Name;
-                            try
+                            string json = File.ReadAllText(bakFile.FullName, Encoding.UTF8);
+                            appData = JsonConvert.DeserializeObject<AppData>(json, JsonSettings);
+                            if (appData != null)
                             {
-                                File.Copy(bakFile.FullName, bakFilePath, true);
-                                using (FileStream fs = new FileStream(bakFilePath, FileMode.Open))
+                                DialogMsg msg = new DialogMsg
                                 {
-                                    BinaryFormatter bf = new BinaryFormatter();
-                                    appData = bf.Deserialize(fs) as AppData;
-                                }
-                                DialogMsg msg = new DialogMsg();
-                                msg.msg = "不幸的是, GeekDesk当前的数据文件已经损坏, " +
-                                    "现在已经启用系统自动备份的数据\n\n" +
-                                    "如果你有较新的备份, " +
-                                    "请退出GeekDesk, " +
-                                    "将备份文件重命名为:Data, " +
-                                    "然后将Data覆盖到GeekDesk的根目录即可\n\n" +
-                                    "启用的备份文件为: \n" + bakFilePath +
-                                    "\n\n如果当前数据就是你想要的数据, 那么请不用管它";
+                                    msg = "GeekDesk 当前主数据文件已自动从备份恢复：\n" + bakFile.FullName
+                                };
                                 GlobalMsgNotification gm = new GlobalMsgNotification(msg);
                                 HandyControl.Controls.Notification ntf = HandyControl.Controls.Notification.Show(gm, ShowAnimation.Fade, true);
                                 gm.ntf = ntf;
-                                File.Delete(bakFilePath);
+
+                                FixMenuHierarchy(appData.MenuList);
                                 SaveAppData(appData, Constants.DATA_FILE_PATH);
                                 return appData;
                             }
-                            catch { 
-                                if (File.Exists(bakFilePath))
-                                {
-                                    File.Delete(bakFilePath);
-                                }
-                            }
                         }
-                        MessageBox.Show("不幸的是, GeekDesk当前的数据文件已经损坏\n如果你有备份, 请将备份文件重命名为:Data 然后将Data覆盖到GeekDesk的根目录即可!");
-                        Application.Current.Shutdown();
-                        return new AppData();
-                    } else
-                    {
-                        MessageBox.Show("不幸的是, GeekDesk当前的数据文件已经损坏\n如果你有备份, 请将备份文件重命名为:Data 然后将Data覆盖到GeekDesk的根目录即可!");
-                        Application.Current.Shutdown();
-                        return new AppData();
+                        catch { }
                     }
-
-                    //    if (File.Exists(Constants.DATA_FILE_BAK_PATH))
-                    //{
-                    //    try
-                    //    {
-                    //        using (FileStream fs = new FileStream(Constants.DATA_FILE_BAK_PATH, FileMode.Open))
-                    //        {
-                    //            BinaryFormatter bf = new BinaryFormatter();
-                    //            appData = bf.Deserialize(fs) as AppData;
-                    //        }
-
-                    //        DialogMsg msg = new DialogMsg();
-                    //        msg.msg = "不幸的是, GeekDesk当前的数据文件已经损坏, " +
-                    //            "现在已经启用系统自动备份的数据\n\n" +
-                    //            "如果你有较新的备份, " +
-                    //            "请退出GeekDesk, " +
-                    //            "将备份文件重命名为:Data, " +
-                    //            "然后将Data覆盖到GeekDesk的根目录即可\n\n" +
-                    //            "系统上次备份时间: \n" + appData.AppConfig.SysBakTime +
-                    //            "\n\n如果当前数据就是你想要的数据, 那么请不用管它";
-                    //        GlobalMsgNotification gm = new GlobalMsgNotification(msg);
-                    //        HandyControl.Controls.Notification ntf = HandyControl.Controls.Notification.Show(gm, ShowAnimation.Fade, true);
-                    //        gm.ntf = ntf;
-                    //    }
-                    //    catch
-                    //    {
-                    //        MessageBox.Show("不幸的是, GeekDesk当前的数据文件已经损坏\n如果你有备份, 请将备份文件重命名为:Data 然后将Data覆盖到GeekDesk的根目录即可!");
-                    //        Application.Current.Shutdown();
-                    //        return null;
-                    //    }
-
-                    //}
-                    //else
-                    //{
-                    //    MessageBox.Show("不幸的是, GeekDesk当前的数据文件已经损坏\n如果你有备份, 请将备份文件重命名为:Data 然后将Data覆盖到GeekDesk的根目录即可!");
-                    //    Application.Current.Shutdown();
-                    //    return null;
-                    //}
-
                 }
             }
+
+            appData = new AppData();
+            SaveAppData(appData, Constants.DATA_FILE_PATH);
+            return appData;
         }
 
         private readonly static object _MyLock = new object();
+        private static bool isSaving = false;
+
         /// <summary>
-        /// 保存app 数据
+        /// 保存 app 数据为 JSON 格式
         /// </summary>
         /// <param name="appData"></param>
+        /// <param name="filePath"></param>
         public static void SaveAppData(AppData appData, string filePath)
         {
+            if (appData == null) return;
             lock (_MyLock)
             {
-                //if (filePath.Equals(Constants.DATA_FILE_BAK_PATH))
-                //{
-                //    appData.AppConfig.SysBakTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                //}
-                if (!Directory.Exists(filePath.Substring(0, filePath.LastIndexOf("\\"))))
+                if (isSaving) return; // 彻底阻断任何嵌套/递归重入序列化
+                try
                 {
-                    Directory.CreateDirectory(filePath.Substring(0, filePath.LastIndexOf("\\")));
+                    isSaving = true;
+                    string dir = Path.GetDirectoryName(filePath);
+                    if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                    {
+                        Directory.CreateDirectory(dir);
+                    }
+
+                    string json = JsonConvert.SerializeObject(appData, JsonSettings);
+                    File.WriteAllText(filePath, json, Encoding.UTF8);
                 }
-                using (FileStream fs = new FileStream(filePath, FileMode.Create))
+                catch (Exception ex)
                 {
-                    BinaryFormatter bf = new BinaryFormatter();
-                    bf.Serialize(fs, appData);
+                    LogUtil.WriteErrorLog(ex, "保存数据文件失败: " + filePath);
+                }
+                finally
+                {
+                    isSaving = false;
                 }
             }
         }
-
 
         public static void SavePassword(string password)
         {
@@ -198,7 +164,8 @@ namespace GeekDesk.Util
                         return uuid;
                     }
                 }
-            } catch (Exception) { }
+            }
+            catch (Exception) { }
             return "ERROR_UUID_GeneraterUUID_" + Constants.MY_UUID;
         }
 
@@ -212,18 +179,18 @@ namespace GeekDesk.Util
                     {
                         return reader.ReadToEnd().Trim();
                     }
-                } else
+                }
+                else
                 {
                     return GeneraterUUID();
                 }
-            } catch(Exception) { }
+            }
+            catch (Exception) { }
             return "ERROR_UUID_GetUniqueUUID_" + Constants.MY_UUID;
         }
 
-
         public static void BakAppData()
         {
-
             SaveFileDialog sfd = new SaveFileDialog
             {
                 Title = "备份文件",
@@ -232,15 +199,9 @@ namespace GeekDesk.Util
             };
             if (sfd.ShowDialog() == true)
             {
-                using (FileStream fs = new FileStream(sfd.FileName, FileMode.Create))
-                {
-                    BinaryFormatter bf = new BinaryFormatter();
-                    bf.Serialize(fs, MainWindow.appData);
-                }
+                SaveAppData(MainWindow.appData, sfd.FileName);
             }
         }
-
-
 
         /// <summary>
         /// 根据路径获取文件图标等信息
@@ -250,25 +211,13 @@ namespace GeekDesk.Util
         public static IconInfo GetIconInfoByPath(string path)
         {
             string tempPath = path;
-
-            //string base64 = ImageUtil.FileImageToBase64(path, System.Drawing.Imaging.ImageFormat.Png);
-            //string ext = "";
-            //if (!ImageUtil.IsSystemItem(path))
-            //{
-            //    ext = System.IO.Path.GetExtension(path).ToLower();
-            //}
-
             string iconPath;
-            //if (".lnk".Equals(ext))
-            //{
-
             string targetPath = FileUtil.GetTargetPathByLnk(path);
             iconPath = FileUtil.GetIconPathByLnk(path);
             if (targetPath != null)
             {
                 path = targetPath;
             }
-            //}
             if (StringUtil.IsEmpty(iconPath))
             {
                 iconPath = path;
@@ -296,22 +245,12 @@ namespace GeekDesk.Util
             return iconInfo;
         }
 
-
         public static IconInfo GetIconInfoByPath_NoWrite(string path)
         {
             string tempPath = path;
-
-            //string base64 = ImageUtil.FileImageToBase64(path, System.Drawing.Imaging.ImageFormat.Png);
-            string ext = "";
-            if (!ImageUtil.IsSystemItem(path))
-            {
-                ext = System.IO.Path.GetExtension(path).ToLower();
-            }
-
             string iconPath = null;
-            if (".lnk".Equals(ext))
+            if (path.EndsWith(".lnk", StringComparison.OrdinalIgnoreCase))
             {
-
                 string targetPath = FileUtil.GetTargetPathByLnk(path);
                 iconPath = FileUtil.GetIconPathByLnk(path);
                 if (targetPath != null)
@@ -341,11 +280,6 @@ namespace GeekDesk.Util
             return iconInfo;
         }
 
-
-
-
-
-
         /// <summary>
         /// 排序图标
         /// </summary>
@@ -356,7 +290,6 @@ namespace GeekDesk.Util
                 if (MainWindow.appData.AppConfig.IconSortType != SortType.CUSTOM && sort)
                 {
                     ObservableCollection<MenuInfo> menuList = MainWindow.appData.MenuList;
-                    //List<IconInfo> list = new List<IconInfo>(menuList[MainWindow.appData.AppConfig.SelectedMenuIndex].IconList);
                     List<IconInfo> list;
                     foreach (MenuInfo menuInfo in menuList)
                     {
@@ -382,10 +315,7 @@ namespace GeekDesk.Util
                 }
             }
             catch (Exception) { }
-            
         }
-
-
 
         /// <summary>
         /// 判断鼠标是否在窗口内
@@ -396,16 +326,13 @@ namespace GeekDesk.Util
         {
             double windowHeight = window.Height;
             double windowWidth = window.Width;
-
             double windowTop = window.Top;
             double windowLeft = window.Left;
 
-            //获取鼠标位置
             System.Windows.Point p = MouseUtil.GetMousePosition();
             double mouseX = p.X;
             double mouseY = p.Y;
 
-            //鼠标不在窗口上
             if (mouseX < windowLeft || mouseX > windowLeft + windowWidth
                 || mouseY < windowTop || mouseY > windowTop + windowHeight)
             {
@@ -414,5 +341,21 @@ namespace GeekDesk.Util
             return true;
         }
 
+        public static void FixMenuHierarchy(ObservableCollection<MenuInfo> list)
+        {
+            if (list == null) return;
+            foreach (var menu in list)
+            {
+                if (menu.Children == null)
+                {
+                    menu.Children = new ObservableCollection<MenuInfo>();
+                }
+                if (menu.IconList == null)
+                {
+                    menu.IconList = new ObservableCollection<IconInfo>();
+                }
+                FixMenuHierarchy(menu.Children);
+            }
+        }
     }
 }

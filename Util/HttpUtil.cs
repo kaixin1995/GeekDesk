@@ -1,28 +1,26 @@
-﻿using System.IO;
-using System.Net;
+using System;
+using System.Net.Http;
 using System.Text;
 
 namespace GeekDesk.Util
 {
     public class HttpUtil
     {
+        private static readonly HttpClient HttpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+
         #region Get请求
         public static string Get(string url)
         {
-            ServicePointManager.Expect100Continue = true;
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-            //创建Web访问对  象
-            WebRequest myRequest = WebRequest.Create(url);
-            myRequest.ContentType = "text/plain; charset=utf-8";
-            //通过Web访问对象获取响应内容
-            WebResponse myResponse = myRequest.GetResponse();
-
-            //通过响应内容流创建StreamReader对象，因为StreamReader更高级更快
-            StreamReader reader = new StreamReader(myResponse.GetResponseStream(), Encoding.GetEncoding("utf-8"));
-            string returnStr = reader.ReadToEnd();//利用StreamReader就可以从响应内容从头读到尾
-            reader.Close();
-            myResponse.Close();
-            return returnStr;
+            try
+            {
+                var response = HttpClient.GetAsync(url).GetAwaiter().GetResult();
+                return response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                LogUtil.WriteErrorLog(ex, "HttpUtil Get 失败: " + url);
+                return "";
+            }
         }
         #endregion
     }

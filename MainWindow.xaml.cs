@@ -49,6 +49,7 @@ namespace GeekDesk
         public static int toDoHotKeyId = -1;
         public static int colorPickerHotKeyId = -1;
         public static MainWindow mainWindow;
+        public LeftCardControl LeftCard => null;
 
        
 
@@ -114,12 +115,8 @@ namespace GeekDesk
         private void ShowSearchBox()
         {
             RunTimeStatus.SEARCH_BOX_SHOW = true;
-            RightCard.VisibilitySearchCard(Visibility.Visible);
-            SearchBox.Width = 400;
+            SearchBarRow.Visibility = Visibility.Visible;
             SearchBox.Focus();
-
-            //执行一遍a查询
-            //SearchBox_TextChanged(null, null);
         }
         /// <summary>
         /// 搜索开始
@@ -128,17 +125,7 @@ namespace GeekDesk
         /// <param name="e"></param>
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (!RunTimeStatus.SEARCH_BOX_SHOW
-               && appData.AppConfig.SearchType != SearchType.KEY_DOWN
-               )
-            {
-                SearchBox.TextChanged -= SearchBox_TextChanged;
-                SearchBox.Clear();
-                SearchBox.TextChanged += SearchBox_TextChanged;
-                return;
-            }
-
-            if (!RunTimeStatus.SEARCH_BOX_SHOW) ShowSearchBox();
+            RunTimeStatus.SEARCH_BOX_SHOW = true;
 
             //刷新搜索后 鼠标移动次数置为0
             RunTimeStatus.MOUSE_MOVE_COUNT = 0;
@@ -177,6 +164,9 @@ namespace GeekDesk
                     SearchResControl control = obj as SearchResControl;
                     control.VerticalUFG.Visibility = Visibility.Collapsed;
                 }
+                RightCard.Loading_RightCard.Visibility = Visibility.Collapsed;
+                RightCard.Visibility = Visibility.Collapsed;
+                AccordionCard.Visibility = Visibility.Visible;
             }
             
         }
@@ -200,23 +190,20 @@ namespace GeekDesk
                     if (string.IsNullOrEmpty(inputText))
                     {
                         RightCard.Loading_RightCard.Visibility = Visibility.Collapsed;
+                        RightCard.Visibility = Visibility.Collapsed;
+                        AccordionCard.Visibility = Visibility.Visible;
                         return;
+                    }
+                    else
+                    {
+                        RightCard.Visibility = Visibility.Visible;
+                        AccordionCard.Visibility = Visibility.Collapsed;
                     }
                     new Thread(() =>
                     {
                         ObservableCollection<IconInfo> resList = new ObservableCollection<IconInfo>();
 
-                        if (appData.AppConfig.EnableEveryThing == true)
-                        {
-                            ObservableCollection<IconInfo> iconBakList = EveryThingUtil.Search(inputText);                            
-                            foreach (IconInfo icon in iconBakList)
-                            {
-                                resList.Add(icon);
-                            }
-                        }
-
-                        int geekDeskCount = 0;
-                        //GeekDesk数据搜索
+                        // 纯净快捷方式/图标搜索 (基于名称和拼音首字母)
                         ObservableCollection<MenuInfo> menuList = appData.MenuList;
                         foreach (MenuInfo menu in menuList)
                         {
@@ -225,9 +212,8 @@ namespace GeekDesk
                             {
                                 if (RunTimeStatus.EVERYTHING_NEW_SEARCH) return;
                                 string pyName = Pinyin.GetInitials(icon.Name).ToLower();
-                                if (icon.Name.Contains(inputText) || pyName.Contains(inputText))
+                                if (icon.Name.ToLower().Contains(inputText) || pyName.Contains(inputText))
                                 {
-                                    geekDeskCount++;
                                     resList.Add(icon);
                                 }
                             }
@@ -235,14 +221,6 @@ namespace GeekDesk
 
                         this.Dispatcher.Invoke(() =>
                         {
-                            if (appData.AppConfig.EnableEveryThing == true)
-                            {
-                                int everythingTotal = Convert.ToInt32(EveryThingUtil.Everything_GetNumResults());
-                                GeekDeskSearchTotal.Text = Convert.ToString(geekDeskCount);
-                                EverythingSearchCount.Text = Convert.ToString(resList.Count - geekDeskCount);
-                                EverythingSearchTotal.Text = Convert.ToString(everythingTotal + geekDeskCount);
-                                SearchResContainer.Visibility = Visibility.Visible;
-                            }
                             SearchResControl control = new SearchResControl(resList);
                             RightCard.VerticalCard.Content = control;
                             //关闭加载效果
@@ -278,13 +256,15 @@ namespace GeekDesk
                 {
                     Keyboard.Focus(SearchBox);
                     RunTimeStatus.SEARCH_BOX_SHOW = false;
+                    SearchBarRow.Visibility = Visibility.Collapsed;
                     SearchBox.TextChanged -= SearchBox_TextChanged;
                     SearchBox.Clear();
                     SearchBox.TextChanged += SearchBox_TextChanged;
-                    SearchBox.Width = 0;
                     SearchResContainer.Visibility = Visibility.Collapsed;
                     RightCard.VerticalCard.Content = null;
                     RightCard.VisibilitySearchCard(Visibility.Collapsed);
+                    RightCard.Visibility = Visibility.Collapsed;
+                    AccordionCard.Visibility = Visibility.Visible;
                 });
             }).Start();
         }
@@ -303,11 +283,29 @@ namespace GeekDesk
             this.DataContext = appData;
             if (appData.MenuList.Count == 0)
             {
-                appData.MenuList.Add(new MenuInfo() { MenuName = "NewMenu", MenuId = System.Guid.NewGuid().ToString(), MenuEdit = Visibility.Collapsed });
+                appData.MenuList.Add(new MenuInfo() { MenuName = "常用软件", MenuId = System.Guid.NewGuid().ToString(), MenuEdit = Visibility.Collapsed });
             }
 
-            this.Width = appData.AppConfig.WindowWidth;
-            this.Height = appData.AppConfig.WindowHeight;
+            // 侧边栏/音速启动默认尺寸
+            if (appData.AppConfig.WindowWidth > 500)
+            {
+                this.Width = 340;
+                appData.AppConfig.WindowWidth = 340;
+            }
+            else
+            {
+                this.Width = appData.AppConfig.WindowWidth;
+            }
+
+            if (appData.AppConfig.WindowHeight < 400)
+            {
+                this.Height = 600;
+                appData.AppConfig.WindowHeight = 600;
+            }
+            else
+            {
+                this.Height = appData.AppConfig.WindowHeight;
+            }
         }
 
         /// <summary>
@@ -351,7 +349,8 @@ namespace GeekDesk
             }
 
             //注册鼠标监听事件
-            if (appData.AppConfig.MouseMiddleShow)
+            // 仅根据秒表窗口等需求开启全局钩子，废弃中键呼出
+            if (appData.AppConfig.SecondsWindow == true)
             {
                 MouseHookThread.Hook();
             }
@@ -378,25 +377,12 @@ namespace GeekDesk
             //设置归属桌面  解决桌面覆盖程序界面的bug
             WindowUtil.SetOwner(this, WindowUtil.GetDesktopHandle(this, DesktopLayer.Progman));
 
-            if (appData.AppConfig.EnableEveryThing == true)
-            {
-                //开启EveryThing插件
-                EveryThingUtil.EnableEveryThing();
-            }
-
             //启动文件备份任务
             BakTask.Start();
 
             Keyboard.Focus(SearchBox);
 
             MessageUtil.ChangeWindowMessageFilter(MessageUtil.WM_COPYDATA, 1);
-
-
-            if (!dataFileExist)
-            {
-                Guide();
-            }
-           
         }
 
 
@@ -602,13 +588,6 @@ namespace GeekDesk
                 }
             }
 
-            if (appData.AppConfig.FollowMouse)
-            {
-                ShowWindowFollowMouse.Show(mainWindow, MousePosition.CENTER, 0, 0);
-                //ShowWindowFollowMouse.FollowMouse(mainWindow);
-            }
-
-
             MainWindow.mainWindow.Activate();
             mainWindow.Show();
             //mainWindow.Visibility = Visibility.Visible;
@@ -720,6 +699,82 @@ namespace GeekDesk
 
 
 
+        private void ToggleSearchBoxClick(object sender, RoutedEventArgs e)
+        {
+            if (SearchBarRow.Visibility == Visibility.Visible)
+            {
+                HidedSearchBox();
+            }
+            else
+            {
+                ShowSearchBox();
+            }
+        }
+
+        private void CloseSearchClick(object sender, RoutedEventArgs e)
+        {
+            HidedSearchBox();
+        }
+
+        private void SettingButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (MainSettingBtn.ContextMenu != null)
+            {
+                MainSettingBtn.ContextMenu.PlacementTarget = MainSettingBtn;
+                MainSettingBtn.ContextMenu.IsOpen = true;
+            }
+        }
+
+        private void MenuSearch_Click(object sender, RoutedEventArgs e)
+        {
+            ShowSearchBox();
+        }
+
+        private void MenuAbout_Click(object sender, RoutedEventArgs e)
+        {
+            ConfigWindow.Show(appData.AppConfig, this);
+        }
+
+        private static bool isPinned = false;
+        private void ToggleTopmostClick(object sender, RoutedEventArgs e)
+        {
+            isPinned = !isPinned;
+            this.Topmost = isPinned;
+            if (isPinned)
+            {
+                MarginHide.StopHide();
+                HandyControl.Controls.Growl.Success("已开启置顶并固定窗口", "MainWindowGrowl");
+            }
+            else
+            {
+                if (appData.AppConfig.MarginHide)
+                {
+                    MarginHide.StartHide();
+                }
+                HandyControl.Controls.Growl.Info("已解除置顶与固定", "MainWindowGrowl");
+            }
+        }
+
+        private void QuickTool_TaskManager(object sender, RoutedEventArgs e)
+        {
+            try { Process.Start("taskmgr.exe"); } catch { }
+        }
+
+        private void QuickTool_ControlPanel(object sender, RoutedEventArgs e)
+        {
+            try { Process.Start("control.exe"); } catch { }
+        }
+
+        private void QuickTool_Calc(object sender, RoutedEventArgs e)
+        {
+            try { Process.Start("calc.exe"); } catch { }
+        }
+
+        private void QuickTool_LockWorkstation(object sender, RoutedEventArgs e)
+        {
+            try { Process.Start("rundll32.exe", "user32.dll,LockWorkStation"); } catch { }
+        }
+
         /// <summary>
         /// 图片图标单击事件
         /// </summary>
@@ -773,13 +828,23 @@ namespace GeekDesk
 
 
         /// <summary>
-        /// 设置图标
+        /// 设置按钮左键直接打开设置页面
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void ConfigButtonClick(object sender, RoutedEventArgs e)
         {
-            SettingMenus.IsOpen = true;
+            ConfigWindow.Show(appData.AppConfig, this);
+        }
+
+        /// <summary>
+        /// 设置按钮右键打开快捷选项菜单
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void SettingButton_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            ConfigWindow.Show(appData.AppConfig, this);
         }
 
         /// <summary>
@@ -799,15 +864,6 @@ namespace GeekDesk
         private void BacklogMenuClick(object sender, RoutedEventArgs e)
         {
             ToDoWindow.Show();
-        }
-        /// <summary>
-        /// 禁用设置按钮右键菜单
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void SettingButton_Initialized(object sender, EventArgs e)
-        {
-            SettingButton.ContextMenu = null;
         }
 
 
@@ -833,10 +889,6 @@ namespace GeekDesk
                 appData.AppConfig.WindowWidth = this.Width;
                 appData.AppConfig.WindowHeight = this.Height;
             }
-            if (guideRun)
-            {
-                Guide();
-            }
         }
 
 
@@ -848,13 +900,9 @@ namespace GeekDesk
         /// <param name="e"></param>
         private void ExitApp(object sender, RoutedEventArgs e)
         {
-            if (appData.AppConfig.MouseMiddleShow || appData.AppConfig.SecondsWindow == true)
+            if (appData.AppConfig.SecondsWindow == true)
             {
                 MouseHookThread.Dispose();
-            }
-            if (appData.AppConfig.EnableEveryThing == true)
-            {
-                EveryThingUtil.DisableEveryThing();
             }
             Application.Current.Shutdown();
         }
@@ -921,7 +969,7 @@ namespace GeekDesk
         /// <param name="e"></param>
         private void MainWindow_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            SearchBox.Focus();
+            // 点击空白区域时不再强制抢焦点，允许搜索框和分类编辑框自由输入
         }
 
         /// <summary>
@@ -1040,129 +1088,19 @@ namespace GeekDesk
                 MessageUtil.CopyDataStruct cds = (MessageUtil.CopyDataStruct)System.Runtime.InteropServices.Marshal.PtrToStructure(lParam, typeof(MessageUtil.CopyDataStruct));
                 if ("ShowApp".Equals(cds.msg))
                 {
-                    ShowApp();
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        ShowApp();
+                        this.Activate();
+                        this.Topmost = true;
+                        if (appData.AppConfig.AlwaysTopmost != true)
+                        {
+                            this.Topmost = false;
+                        }
+                    });
                 }
             }
             return hwnd;
-        }
-
-        #region 新手引导
-
-        private int guideIndex = 0;
-        private bool guideRun = false;
-        private void Guide()
-        {
-            try
-            {
-                guideRun = true;
-                //防止影响主程序进程
-                if (CheckShouldShowApp())
-                {
-                    ShowApp();
-                }
-                GrayBorder.Visibility = Visibility.Visible;
-                GuideSwitch(guideIndex);
-                GuideCard.Visibility = Visibility.Visible;
-            }
-            catch (Exception) { guideRun = false; }
-        }
-
-        private void GuideSwitch(int index)
-        {
-            guideIndex = index;
-            GuideNum.Text = Convert.ToString(index + 1);
-            GuideTitle1.Text = GuideInfoList.mainWindowGuideList[index].Title1;
-            GuideTitle2.Text = GuideInfoList.mainWindowGuideList[index].Title2;
-            GuideText.Text = GuideInfoList.mainWindowGuideList[index].GuideText;
-
-            if (index == 0)
-            {
-                PreviewGuideBtn.Visibility = Visibility.Collapsed;
-                NextGuideBtn.Content = "下一步";
-            } else if (index > 0 && index < GuideInfoList.mainWindowGuideList.Count - 1)
-            {
-                PreviewGuideBtn.Visibility = Visibility.Visible;
-                NextGuideBtn.Content = "下一步";
-            } else
-            {
-                NextGuideBtn.Content = "完成";
-            }
-
-            switch (index)
-            {
-                default: //0  //右侧列表区域
-                    
-                    Point point = RightCard.TransformToAncestor(this).Transform(new Point(0, 0));
-                    //内部中上
-                    GrayBoderClip(point.X, point.Y, RightCard.ActualWidth, RightCard.ActualHeight,
-                        new Thickness(point.X + RightCard.ActualWidth / 2 - GuideCard.ActualWidth / 2, point.Y, 0, 0));
-                    break;
-                case 1:  //左侧菜单
-                    Point leftCardPoint = LeftCard.TransformToAncestor(this).Transform(new Point(0, 0));
-                    GrayBoderClip(leftCardPoint.X , leftCardPoint.Y , LeftCard.ActualWidth, LeftCard.ActualHeight,
-                        // 外部中下侧
-                        new Thickness(leftCardPoint.X + LeftCard.ActualWidth,
-                        leftCardPoint.Y + LeftCard.ActualHeight / 2 - GuideCard.ActualHeight / 2, 0, 0));
-                    break;
-                case 2: //头部拖拽栏
-                    GrayBoderClip(0, 0, this.Width, 50,
-                        // 外部中下侧
-                        new Thickness(this.Width / 2 - GuideCard.ActualWidth / 2, 50, 0, 0));
-                    break;
-                case 3:
-                    Point mainBtnPoint = MainBtnPanel.TransformToAncestor(this).Transform(new Point(0, 0));
-                    GrayBoderClip(mainBtnPoint.X, mainBtnPoint.Y, MainBtnPanel.ActualWidth, MainBtnPanel.ActualHeight,
-                        // 外部左下侧
-                        new Thickness(mainBtnPoint.X - GuideCard.Width,
-                        mainBtnPoint.Y, 0, 0));
-                    break;
-            }
-        }
-
-
-        private void GrayBoderClip(double x, double y, double w, double h, Thickness margin)
-        {
-            PathGeometry borGeometry = new PathGeometry();
-
-            RectangleGeometry rg = new RectangleGeometry();
-            rg.Rect = new Rect(0, 0, this.Width, this.Height);
-            borGeometry = Geometry.Combine(borGeometry, rg, GeometryCombineMode.Union, null);
-            GrayBorder.Clip = borGeometry;
-
-            RectangleGeometry rg1 = new RectangleGeometry();
-            rg1.Rect = new Rect(x - 20, y - 20, w, h);
-            borGeometry = Geometry.Combine(borGeometry, rg1, GeometryCombineMode.Exclude, null);
-            GuideCard.Margin = margin;
-            GrayBorder.Clip = borGeometry;
-        }
-
-        private void PreviewGuideBtn_Click(object sender, RoutedEventArgs e)
-        {
-            int index = Convert.ToInt32(GuideNum.Text.ToString()) - 1;
-            int previewIndex = index - 1;
-            GuideSwitch(previewIndex);
-        }
-
-        private void NextGuideBtn_Click(object sender, RoutedEventArgs e)
-        {
-            if ("完成".Equals(NextGuideBtn.Content.ToString())) {
-                GrayBorder.Visibility = Visibility.Collapsed;
-                GuideCard.Visibility = Visibility.Collapsed;
-                guideIndex = 0;
-                guideRun = false;
-                return;
-            }
-            int index = Convert.ToInt32(GuideNum.Text.ToString()) - 1;
-            int nextIndex = index + 1;
-            GuideSwitch(nextIndex);
-        }
-
-
-        #endregion
-
-        private void Guide_Click(object sender, RoutedEventArgs e)
-        {
-            Guide();
         }
     }
 }

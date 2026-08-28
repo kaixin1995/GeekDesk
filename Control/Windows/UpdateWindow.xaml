@@ -45,7 +45,7 @@
                     <hc:Card.Footer>
                         <StackPanel Margin="10" Width="520">
                             <!--Card 的一级内容-->
-                            <TextBlock TextWrapping="NoWrap" x:Name="Title"  Style="{DynamicResource TextBlockLargeBold}" TextTrimming="CharacterEllipsis" 
+                            <TextBlock TextWrapping="NoWrap" x:Name="UpdateTitle"  Style="{DynamicResource TextBlockLargeBold}" TextTrimming="CharacterEllipsis" 
                                        Text="" 
                                        HorizontalAlignment="Left"/>
                             <!--Card 的二级内容-->

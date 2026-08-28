@@ -1,28 +1,23 @@
-﻿using GeekDesk.Constant;
+using GeekDesk.Constant;
+using GeekDesk.Util;
 using GeekDesk.ViewModel;
+using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Configuration;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace GeekDesk.Task
 {
     internal class BakTask
     {
-
         public static void Start()
         {
             System.Timers.Timer timer = new System.Timers.Timer
             {
                 Enabled = true,
-                Interval = 60 * 1000 * 60 * 2, //60秒 * 60 * 2 2小时触发一次
-                //Interval = 6000,
+                Interval = 60 * 1000 * 60 * 2, // 2小时触发一次
             };
             timer.Start();
             timer.Elapsed += Timer_Elapsed;
@@ -41,7 +36,7 @@ namespace GeekDesk.Task
                 bakDays = Int32.Parse(bakDaysStr.Trim());
             }
 
-            string bakFilePath = Constants.DATA_FILE_BAK_DIR_PATH + "\\" + todayBakName;
+            string bakFilePath = Path.Combine(Constants.DATA_FILE_BAK_DIR_PATH, todayBakName);
             if (dirInfo.Exists)
             {
                 // 获取文件信息并按创建时间倒序排序
@@ -52,25 +47,28 @@ namespace GeekDesk.Task
                     FileInfo[] sortedFiles = files.OrderByDescending(file => file.CreationTime).ToArray();
                     if (!sortedFiles[0].Name.Equals(todayBakName))
                     {
-                        //今天未创建备份  开始创建今天的备份
+                        // 今天未创建备份 开始创建今天的备份
                         createBakFile(bakFilePath);
                     }
 
-                    //判断文件是否超过了7个  超过7个就删除
+                    // 判断文件是否超过了设置天数 超过就删除
                     if (sortedFiles.Length > bakDays)
                     {
                         for (int i = bakDays; i < sortedFiles.Length; i++)
                         {
-                            sortedFiles[i].Delete();
+                            try
+                            {
+                                sortedFiles[i].Delete();
+                            }
+                            catch { }
                         }
                     }
-
-                } else
+                }
+                else
                 {
-                    //没有文件 直接创建今天的备份
+                    // 没有文件 直接创建今天的备份
                     createBakFile(bakFilePath);
                 }
-                
             }
             else
             {
@@ -78,16 +76,20 @@ namespace GeekDesk.Task
             }
         }
 
-        //创建备份文件
+        // 创建备份文件 (JSON 格式)
         private static void createBakFile(string filePath)
         {
-            using (FileStream fs = new FileStream(filePath, FileMode.Create))
+            try
             {
-                BinaryFormatter bf = new BinaryFormatter();
-                bf.Serialize(fs, MainWindow.appData);
+                if (MainWindow.appData != null)
+                {
+                    CommonCode.SaveAppData(MainWindow.appData, filePath);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogUtil.WriteErrorLog(ex, "创建数据备份文件失败: " + filePath);
             }
         }
-
-
     }
 }

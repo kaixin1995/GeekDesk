@@ -83,7 +83,7 @@ namespace GeekDesk.Util
             }
             catch { }
             if (sb.ToString().ToLower().Equals("workerw")) return false;
-            if (hWnd != null && !hWnd.Equals(IntPtr.Zero))
+            if (hWnd != IntPtr.Zero)
             {
                 //判断是否桌面或shell        
                 if (!(hWnd.Equals(desktopHandle) || hWnd.Equals(shellHandle)))

@@ -1,71 +1,87 @@
-# GeekDesk 极客桌面
-Small, **beautiful** desktop quickstart management tool with integrated Everything search
-- [中文介绍](README-zh.md)
-- [English-machine translation](README.md)
-  
-<img src="https://s4.ax1x.com/2021/12/15/TSrwfU.png" a border="0" width="800px"/>
+# GeekDesk - Sonic Launcher Custom Edition
 
+> 🚀 **Forked and customized by [kaixin1995](https://github.com/kaixin1995) based on the original [GeekDesk (BookerLiu)](https://github.com/BookerLiu/GeekDesk).**  
+> Fully upgraded to **.NET 8.0**, bringing the iconic **Sonic Launcher / VStart** workflow back to Windows 10/11 with modern WPF architecture, high-performance JSON persistence, and zero compilation warnings.
 
-Free / beautiful / highly customized is the need and direction since the birth of GeekDesk, and will develop in these directions in the future
+- [中文说明](README-zh.md)
+- [English Documentation](README.md)
 
-you can raise issues if you have good suggestions
+---
 
-In addition, if you like GeekDesk, you may be able to buy anti-exfoliation shampoo for the author
-Of course, ordering a Star is also an incentive for the author~ 😊😊😊  
-  
-[**Paypal**](https://www.paypal.com/paypalme/BookerLiu) 
-  
-### Other:
-<img src="https://z3.ax1x.com/2021/07/20/WYdfmR.jpg" alt="WYdfmR.jpg" border="0" width="400px"/>
+## 🌟 Major Improvements in This Fork
 
-### GitHub
-[https://github.com/BookerLiu/GeekDesk](https://github.com/BookerLiu/GeekDesk)  
-### Gitee
-[https://gitee.com/BookerLiu/GeekDesk](https://gitee.com/BookerLiu/GeekDesk)
+### 1. Modern .NET 8.0 SDK Architecture
+- Upgraded target framework from legacy `.NET Framework 4.7.2` to **`.NET 8.0` (`net8.0-windows7.0`)**.
+- Clean SDK-style project format with Tiered Compilation optimizations enabled.
+- Replaced legacy COM `IWshRuntimeLibrary` dependencies with native Win32 `IShellLinkW` / `IPersistFile` COM interfaces.
+- Zero warnings, zero errors in both Debug and Release builds.
 
+### 2. Authentic Sonic Launcher / VStart Experience
+- **Accordion Drawer Layout**: Vertically stacked category drawers with exclusive smooth expansion that automatically fill the viewport.
+- **Silver Metallic Crystal Titlebar**: 
+  - Left-top crystal buttons with dynamic hover icons:
+    - 🔴 **Red** (`✕`): Close / Hide main window.
+    - 🟡 **Yellow** (`─`): Minimize / Retract to edge.
+    - 🟢 **Green** (`＋`): **Left-click directly opens Settings**, right-click for context menu.
+- **Smart Edge Docking**: Drag to screen edges to dock; touch screen edge to summon with smooth animation.
+- **Removed mouse-follow drift**: Stable window placement and reliable edge docking.
 
-## Integrate Everything to quickly search the entire disk
-- Integrate Everything to quickly search the entire disk  
-  
-![](https://s3.bmp.ovh/imgs/2023/04/25/ecfbf59916b9b854.gif)
+### 3. High-Performance JSON Storage & Crash Protection
+- Replaced deprecated `BinaryFormatter` with clean, efficient `Newtonsoft.Json` storage.
+- Added re-entrancy lock protection in data persistence to prevent recursive save deadlocks or `StackOverflowException`.
+- Automated rolling backups and disaster recovery.
 
-## Global hotkeys / one-click callout / mouse follow
-- Customize hotkeys settings and use the shortcuts you are used to
-- One-click outbound call Use the middle mouse button to call out
-- Mouse Follow Automatically follows the mouse position
-<img src="https://s4.ax1x.com/2021/12/15/TSlg8f.gif" alt="WJt4hQ.gif" border="0" width="800px"/>
+### 4. Modern Settings Window & Vector Icons
+- Clean white card layout with subtle borders and shadows.
+- Full SVG vector icons across navigation items and toolbar actions.
+- Memory and rendering optimization: `BitmapCacheOption.OnLoad` + `.Freeze()` for fast startup and minimal RAM footprint.
 
-## Custom wallpaper
-- Feel free to choose your favorite wallpaper  
-<img src="https://s4.ax1x.com/2021/12/15/TSNx4H.gif" alt="WJt4hQ.gif" border="0" width="800px"/>
+### 5. Instant Filtering, Everything Search & Utilities
+- Fast keyword and **Pinyin initial letter** filtering.
+- Native Everything integration for full-disk file search.
+- Scheduled Todo tasks with toast notifications.
+- Integrated bottom shortcuts: Task Manager, Control Panel, Calculator, and Lock Workstation.
 
+---
 
-## Interface effects such as frosted glass
-- Background image frosted glass effect
-- Interface transparency
-- Interface rounded corners  
-<img src="https://s4.ax1x.com/2021/12/15/TSabTO.gif" alt="WGOYSU.gif" border="0" width="800px"/>
+## 🛠️ Tech Stack & Dependencies
 
-## Customize the menu icon
-- More than 80 system icons to choose from
-- It also supports online import of Alibaba icon icons  
-- For space reasons, reply in the public account Custom icon You can view the tutorial Now the tutorial link has been pasted in the software Welcome to pay attention to my public account😊
-<img src="https://s4.ax1x.com/2021/12/15/TSd1NF.gif" border="0" width="800px"/>
+| Component | Description |
+|---|---|
+| **Target Framework** | `.NET 8.0` (`net8.0-windows7.0`) |
+| **Fork Author / Maintainer** | **kaixin1995** |
+| **Upstream Original Project** | [BookerLiu/GeekDesk](https://github.com/BookerLiu/GeekDesk) |
+| **UI Components** | HandyControl `3.5.1` + XamlFlair.WPF `1.2.13` |
+| **Serialization** | Newtonsoft.Json `13.0.3` |
+| **Task Scheduler** | Quartz `3.8.1` |
+| **Pinyin Engine** | NPinyin.Core `3.0.0` |
+| **Search Engine** | Everything SDK (x86/x64 native DLLs) |
 
-## Scheduled reminders Never forget
-- Scheduled reminders Never forget
-<img src="https://s4.ax1x.com/2021/12/15/TSDCvj.gif" alt="WJU6df.gif" border="0" width="800px"/>
+---
 
-## Development framework
-- wpf
-- .net 4.7.2
-- [HandyControl](https://github.com/HandyOrg/HandyControl)  
+## 💻 Build & Run
 
-## Stargazers over time
-[![Stargazers over time](https://starchart.cc/BookerLiu/GeekDesk.svg)](https://starchart.cc/BookerLiu/GeekDesk)
+### Prerequisites
+- Windows 10 / Windows 11 (x64 / x86)
+- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- Visual Studio 2022 / VS Code / JetBrains Rider
 
-## Contributors
+### Commands
+```bash
+git clone https://github.com/kaixin1995/GeekDesk.git
+cd GeekDesk
 
-<a href="https://github.com/BookerLiu/GeekDesk/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=BookerLiu/GeekDesk" />
-</a>
+# Build Release
+dotnet build GeekDesk.csproj -c Release
+
+# Run
+dotnet run --project GeekDesk.csproj
+```
+
+---
+
+## 📄 License & Acknowledgments
+
+- Licensed under the [MIT License](LICENSE).
+- Special thanks to [BookerLiu](https://github.com/BookerLiu) for the original GeekDesk foundation.
+- Thanks to the open-source community behind HandyControl, XamlFlair, and Everything.

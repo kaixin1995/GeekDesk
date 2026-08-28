@@ -19,14 +19,18 @@ namespace GeekDesk.Util
             string svgPath = "/GeekDesk;component/Resource/Iconfont/iconfont.js";
             string jsonPath = "/GeekDesk;component/Resource/Iconfont/iconfont.json";
 
-            Stream svgStream = Application.GetResourceStream(new Uri(svgPath, UriKind.Relative)).Stream;
-            Stream jsonStream = Application.GetResourceStream(new Uri(jsonPath, UriKind.Relative)).Stream;
+            var svgRes = Application.GetResourceStream(new Uri(svgPath, UriKind.Relative));
+            var jsonRes = Application.GetResourceStream(new Uri(jsonPath, UriKind.Relative));
+            if (svgRes == null || jsonRes == null) return new List<IconfontInfo>();
 
-            StreamReader streamReader = new StreamReader(svgStream);
-            string svgJsStr = streamReader.ReadToEnd();
-            JObject jo = ReadJson(jsonStream);
-
-            return GetIconfonts(svgJsStr, jo);
+            using (Stream svgStream = svgRes.Stream)
+            using (Stream jsonStream = jsonRes.Stream)
+            using (StreamReader streamReader = new StreamReader(svgStream))
+            {
+                string svgJsStr = streamReader.ReadToEnd();
+                JObject jo = ReadJson(jsonStream);
+                return GetIconfonts(svgJsStr, jo);
+            }
         }
 
         public static List<IconfontInfo> GetIconfonts(string svgJsStr, string jsonStr)
@@ -80,13 +84,12 @@ namespace GeekDesk.Util
 
         public static string GetMd5Str(string ConvertString)
         {
-            MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider();
-            string t2 = BitConverter.ToString(md5.ComputeHash(UTF8Encoding.Default.GetBytes(ConvertString)), 4, 8);
-            t2 = t2.Replace("-", "");
-
-            t2 = t2.ToLower();
-
-            return t2;
+            using (var md5 = System.Security.Cryptography.MD5.Create())
+            {
+                string t2 = BitConverter.ToString(md5.ComputeHash(Encoding.UTF8.GetBytes(ConvertString)), 4, 8);
+                t2 = t2.Replace("-", "").ToLower();
+                return t2;
+            }
         }
     }
 }

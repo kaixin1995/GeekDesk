@@ -85,7 +85,7 @@ namespace GeekDesk.Control.Windows
             DateTime dt;
             string execTime;
             TodoTaskExecType execType;
-            if (Title.Text.Trim() == "")
+            if (TodoTitle.Text.Trim() == "")
             {
                 Growl.Warning("任务标题不能为空!");
                 return;
@@ -139,7 +139,7 @@ namespace GeekDesk.Control.Windows
             dt = Convert.ToDateTime(execTime);
             ToDoInfo info = new ToDoInfo
             {
-                Title = Title.Text,
+                Title = TodoTitle.Text,
                 Msg = Msg.Text,
                 ExeTime = execTime,
                 ExecType = execType,

@@ -23,6 +23,67 @@ namespace GeekDesk.ViewModel
         private bool isEncrypt;  //是否加密
         private MenuType menuType; //菜单类型 普通,  关联
         private string linkPath; //关联路径
+        private string parentId = null; //父分类ID（支持多级分类）
+        private ObservableCollection<MenuInfo> children = new ObservableCollection<MenuInfo>();
+        private bool isExpanded = true;
+        private bool isSelected = false;
+
+        public string ParentId
+        {
+            get => parentId;
+            set
+            {
+                parentId = value;
+                OnPropertyChanged("ParentId");
+            }
+        }
+
+        public ObservableCollection<MenuInfo> Children
+        {
+            get
+            {
+                if (children == null) children = new ObservableCollection<MenuInfo>();
+                return children;
+            }
+            set
+            {
+                children = value;
+                OnPropertyChanged("Children");
+            }
+        }
+
+        public bool IsExpanded
+        {
+            get => isExpanded;
+            set
+            {
+                if (isExpanded != value)
+                {
+                    isExpanded = value;
+                    OnPropertyChanged("IsExpanded");
+                    if (isExpanded && MainWindow.appData != null)
+                    {
+                        foreach (var m in MainWindow.appData.MenuList)
+                        {
+                            if (m != this && m.IsExpanded)
+                            {
+                                m.IsExpanded = false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public bool IsSelected
+        {
+            get => isSelected;
+            set
+            {
+                isSelected = value;
+                OnPropertyChanged("IsSelected");
+            }
+        }
 
 
         public string LinkPath
@@ -124,6 +185,7 @@ namespace GeekDesk.ViewModel
             }
         }
 
+        [Newtonsoft.Json.JsonIgnore]
         public Visibility MenuEdit
         {
             get
@@ -145,6 +207,7 @@ namespace GeekDesk.ViewModel
             }
         }
 
+        [Newtonsoft.Json.JsonIgnore]
         public Visibility NotMenuEdit
         {
             get

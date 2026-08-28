@@ -10,7 +10,7 @@ using System.Windows.Threading;
 namespace GeekDesk.Util
 {
 
-    enum HideType
+    public enum HideType
     {
         TOP_SHOW = 1,
         LEFT_SHOW = 2,
@@ -39,9 +39,11 @@ namespace GeekDesk.Util
         public static bool ON_HIDE = false;
 
 
-        private static double showMarginWidth = 1;
+        private static double showMarginWidth = 2;
 
         public static bool IS_HIDE = false;
+
+        public static HideType CURRENT_DOCK = HideType.RIGHT_HIDE;
 
         private static System.Windows.Forms.Timer timer = null;
 
@@ -95,62 +97,80 @@ namespace GeekDesk.Util
             double mouseX = p.X;
             double mouseY = p.Y;
 
-            //鼠标不在窗口上
+            //鼠标不在窗口上 (离开窗口且未隐藏，则缩回边缘)
             if ((mouseX < windowLeft || mouseX > windowLeft + windowWidth
                 || mouseY < windowTop || mouseY > windowTop + windowHeight) && !IS_HIDE && window.Visibility == Visibility.Visible)
             {
                 //上方隐藏条件
-                if (windowTop <= screenTop)
+                if (windowTop <= screenTop + 5)
                 {
                     IS_HIDE = true;
-                    //FadeAnimation(1, 0);
+                    CURRENT_DOCK = HideType.TOP_HIDE;
                     HideAnimation(windowTop, screenTop - windowHeight + showMarginWidth, Window.TopProperty, HideType.TOP_HIDE);
                     return;
                 }
                 //左侧隐藏条件
-                if (windowLeft <= screenLeft)
+                if (windowLeft <= screenLeft + 5)
                 {
                     IS_HIDE = true;
-                    //FadeAnimation(1, 0);
+                    CURRENT_DOCK = HideType.LEFT_HIDE;
                     HideAnimation(windowLeft, screenLeft - windowWidth + showMarginWidth, Window.LeftProperty, HideType.LEFT_HIDE);
                     return;
                 }
                 //右侧隐藏条件
-                if (windowLeft + windowWidth + Math.Abs(screenLeft) >= screenWidth)
+                if (windowLeft + windowWidth + Math.Abs(screenLeft) >= screenWidth - 5)
                 {
                     IS_HIDE = true;
-                    //FadeAnimation(1, 0);
+                    CURRENT_DOCK = HideType.RIGHT_HIDE;
                     HideAnimation(windowLeft, screenWidth - Math.Abs(screenLeft) - showMarginWidth, Window.LeftProperty, HideType.RIGHT_HIDE);
                     return;
                 }
             }
-            else if (mouseX >= windowLeft && mouseX <= windowLeft + windowWidth
-              && mouseY >= windowTop && mouseY <= windowTop + windowHeight && IS_HIDE && window.Visibility != Visibility.Visible)
+            // 鼠标触碰停靠边缘或在隐藏细条上时，自动滑出
+            else if (IS_HIDE && window.Visibility != Visibility.Visible)
             {
-                window.Show();
-                //上方显示
-                if (windowTop <= screenTop - showMarginWidth)
+                bool hitDock = false;
+                if (CURRENT_DOCK == HideType.LEFT_HIDE && mouseX <= screenLeft + 5 && mouseY >= windowTop && mouseY <= windowTop + windowHeight)
                 {
-                    IS_HIDE = false;
-                    HideAnimation(windowTop, screenTop, Window.TopProperty, HideType.TOP_SHOW);
-                    //FadeAnimation(0, 1);
-                    return;
+                    hitDock = true;
                 }
-                //左侧显示
-                if (windowLeft <= screenLeft - showMarginWidth)
+                else if (CURRENT_DOCK == HideType.RIGHT_HIDE && mouseX >= screenWidth - Math.Abs(screenLeft) - 5 && mouseY >= windowTop && mouseY <= windowTop + windowHeight)
                 {
-                    IS_HIDE = false;
-                    HideAnimation(windowLeft, screenLeft, Window.LeftProperty, HideType.LEFT_SHOW);
-                    //FadeAnimation(0, 1);
-                    return;
+                    hitDock = true;
                 }
-                //右侧显示
-                if (windowLeft + Math.Abs(screenLeft) == screenWidth - showMarginWidth)
+                else if (CURRENT_DOCK == HideType.TOP_HIDE && mouseY <= screenTop + 5 && mouseX >= windowLeft && mouseX <= windowLeft + windowWidth)
                 {
-                    IS_HIDE = false;
-                    HideAnimation(windowLeft, screenWidth - Math.Abs(screenLeft) - windowWidth, Window.LeftProperty, HideType.RIGHT_SHOW);
-                    //FadeAnimation(0, 1);
-                    return;
+                    hitDock = true;
+                }
+                else if (mouseX >= windowLeft && mouseX <= windowLeft + windowWidth && mouseY >= windowTop && mouseY <= windowTop + windowHeight)
+                {
+                    hitDock = true;
+                }
+
+                if (hitDock)
+                {
+                    window.Show();
+                    //上方显示
+                    if (CURRENT_DOCK == HideType.TOP_HIDE || windowTop <= screenTop - showMarginWidth + 5)
+                    {
+                        IS_HIDE = false;
+                        HideAnimation(windowTop, screenTop, Window.TopProperty, HideType.TOP_SHOW);
+                        return;
+                    }
+                    //左侧显示
+                    if (CURRENT_DOCK == HideType.LEFT_HIDE || windowLeft <= screenLeft - showMarginWidth + 5)
+                    {
+                        IS_HIDE = false;
+                        HideAnimation(windowLeft, screenLeft, Window.LeftProperty, HideType.LEFT_SHOW);
+                        return;
+                    }
+                    //右侧显示
+                    if (CURRENT_DOCK == HideType.RIGHT_HIDE || windowLeft + Math.Abs(screenLeft) >= screenWidth - showMarginWidth - 5)
+                    {
+                        IS_HIDE = false;
+                        HideAnimation(windowLeft, screenWidth - Math.Abs(screenLeft) - windowWidth, Window.LeftProperty, HideType.RIGHT_SHOW);
+                        return;
+                    }
                 }
             }
 

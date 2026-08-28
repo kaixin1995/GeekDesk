@@ -1,7 +1,7 @@
-﻿using IWshRuntimeLibrary;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Text.RegularExpressions;
 using File = System.IO.File;
@@ -10,25 +10,64 @@ namespace GeekDesk.Util
 {
     public class FileUtil
     {
-
         private static readonly string NO_PATH = "{(.*)}";
         private static readonly string NO_ICO = "^,(.*)";
         private static readonly string HAVE_ICO = "(.*),(.*)";
+
+        #region Native ShellLink COM Interfaces
+        [ComImport]
+        [Guid("00021401-0000-0000-C000-000000000046")]
+        [ClassInterface(ClassInterfaceType.None)]
+        private class ShellLink { }
+
+        [ComImport]
+        [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        [Guid("000214F9-0000-0000-C000-000000000046")]
+        private interface IShellLinkW
+        {
+            void GetPath([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszFile, int cch, IntPtr pfd, uint fFlags);
+            void GetIDList(out IntPtr ppidl);
+            void SetIDList(IntPtr pidl);
+            void GetDescription([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszName, int cch);
+            void SetDescription([MarshalAs(UnmanagedType.LPWStr)] string pszName);
+            void GetWorkingDirectory([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszDir, int cch);
+            void SetWorkingDirectory([MarshalAs(UnmanagedType.LPWStr)] string pszDir);
+            void GetArguments([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszArgs, int cch);
+            void SetArguments([MarshalAs(UnmanagedType.LPWStr)] string pszArgs);
+            void GetHotkey(out short pwHotkey);
+            void SetHotkey(short wHotkey);
+            void GetShowCmd(out int piShowCmd);
+            void SetShowCmd(int iShowCmd);
+            void GetIconLocation([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszIconPath, int cch, out int piIcon);
+            void SetIconLocation([MarshalAs(UnmanagedType.LPWStr)] string pszIconPath, int iIcon);
+            void SetRelativePath([MarshalAs(UnmanagedType.LPWStr)] string pszPathRel, uint dwReserved);
+            void Resolve(IntPtr hwnd, uint fFlags);
+            void SetPath([MarshalAs(UnmanagedType.LPWStr)] string pszFile);
+        }
+
+        private const uint SLGP_UNCPRIORITY = 0x2;
+        private const uint SLGP_RAWPATH = 0x4;
+        private const int STGM_READ = 0;
+        #endregion
 
         public static string GetTargetPathByLnk(string filePath)
         {
             try
             {
-                WshShell shell = new WshShell();
-                IWshRuntimeLibrary.IWshShortcut shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(filePath);
-                if (StringUtil.IsEmpty(shortcut.TargetPath))
+                IShellLinkW link = (IShellLinkW)new ShellLink();
+                ((IPersistFile)link).Load(filePath, STGM_READ);
+                StringBuilder sb = new StringBuilder(1024);
+                link.GetPath(sb, sb.Capacity, IntPtr.Zero, SLGP_UNCPRIORITY);
+                string path = sb.ToString();
+
+                if (string.IsNullOrEmpty(path))
                 {
-                    return null;
+                    return ParseShortcut(filePath);
                 }
-                string path = shortcut.TargetPath;
-                if (path == null || Regex.IsMatch(path, NO_PATH))
+                if (Regex.IsMatch(path, NO_PATH))
                 {
-                    path = ParseShortcut(filePath);
+                    string parsed = ParseShortcut(filePath);
+                    if (!string.IsNullOrEmpty(parsed)) path = parsed;
                 }
                 return path;
             }
@@ -46,20 +85,19 @@ namespace GeekDesk.Util
         /// <returns></returns>
         public static string GetArgByLnk(string filePath)
         {
-            //return "";
             try
             {
-                WshShell shell = new WshShell();
                 if (File.Exists(filePath))
                 {
-                    object shortcutObj = shell.CreateShortcut(filePath);
-                    IWshRuntimeLibrary.IWshShortcut shortcut = (IWshRuntimeLibrary.IWshShortcut)shortcutObj;
-                    return shortcut.Arguments;
+                    IShellLinkW link = (IShellLinkW)new ShellLink();
+                    ((IPersistFile)link).Load(filePath, STGM_READ);
+                    StringBuilder sb = new StringBuilder(1024);
+                    link.GetArguments(sb, sb.Capacity);
+                    return sb.ToString();
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                //LogUtil.WriteErrorLog(e, "获取启动参数失败! filePath=" + filePath);
             }
             return "";
         }
@@ -73,14 +111,15 @@ namespace GeekDesk.Util
         {
             try
             {
-                WshShell shell = new WshShell();
-                IWshRuntimeLibrary.IWshShortcut shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(filePath);
-                var iconPath = shortcut.IconLocation;
+                IShellLinkW link = (IShellLinkW)new ShellLink();
+                ((IPersistFile)link).Load(filePath, STGM_READ);
+                StringBuilder sb = new StringBuilder(1024);
+                link.GetIconLocation(sb, sb.Capacity, out _);
+                string iconPath = sb.ToString();
 
                 if (StringUtil.IsEmpty(iconPath)
                     || Regex.IsMatch(iconPath, NO_ICO)
-                    || Regex.IsMatch(iconPath, NO_PATH)
-                    || !Regex.IsMatch(iconPath, HAVE_ICO))
+                    || Regex.IsMatch(iconPath, NO_PATH))
                 {
                     return null;
                 }
@@ -96,15 +135,6 @@ namespace GeekDesk.Util
             }
         }
 
-
-        /*
-        UINT MsiGetShortcutTarget(
-            LPCTSTR szShortcutTarget,
-            LPTSTR szProductCode,
-            LPTSTR szFeatureId,
-            LPTSTR szComponentCode
-        );
-        */
         [DllImport("msi.dll", CharSet = CharSet.Auto)]
         static extern int MsiGetShortcutTarget(string targetFile, StringBuilder productCode, StringBuilder featureID, StringBuilder componentCode);
 
@@ -130,14 +160,6 @@ namespace GeekDesk.Util
         public const int MaxGuidLength = 38;
         public const int MaxPathLength = 1024;
 
-        /*
-        INSTALLSTATE MsiGetComponentPath(
-          LPCTSTR szProduct,
-          LPCTSTR szComponent,
-          LPTSTR lpPathBuf,
-          DWORD* pcchBuf
-        );
-        */
         [DllImport("msi.dll", CharSet = CharSet.Auto)]
         static extern InstallState MsiGetComponentPath(string productCode, string componentCode, StringBuilder componentPath, ref int componentPathBufferSize);
 
@@ -186,11 +208,10 @@ namespace GeekDesk.Util
             return relativePath;
         }
 
-
         public static FileInfo GetFileByNameWithDir(string name, string dir)
         {
             DirectoryInfo d = new DirectoryInfo(dir);
-            FileInfo[] files = d.GetFiles();//文件
+            FileInfo[] files = d.GetFiles();
             foreach (FileInfo fi in files)
             {
                 if (fi.Name.Equals(name))
@@ -205,6 +226,5 @@ namespace GeekDesk.Util
             }
             return null;
         }
-
     }
 }

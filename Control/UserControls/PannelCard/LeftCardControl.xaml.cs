@@ -9,14 +9,12 @@ using System;
 
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
-using WindowsAPICodePack.Dialogs;
 
 namespace GeekDesk.Control.UserControls.PannelCard
 {
@@ -195,7 +193,7 @@ namespace GeekDesk.Control.UserControls.PannelCard
         /// <param name="e"></param>
         private void CreateMenu(object sender, RoutedEventArgs e)
         {
-            MenuInfo info = new MenuInfo() { MenuEdit = Visibility.Collapsed, MenuId = System.Guid.NewGuid().ToString(), MenuName = "NewMenu" };
+            MenuInfo info = new MenuInfo() { MenuEdit = Visibility.Collapsed, MenuId = System.Guid.NewGuid().ToString(), MenuName = "新分类" };
             appData.MenuList.Add(info);
             MenuListBox.SelectedIndex = appData.MenuList.Count - 1;
             appData.AppConfig.SelectedMenuIndex = MenuListBox.SelectedIndex;
@@ -207,6 +205,49 @@ namespace GeekDesk.Control.UserControls.PannelCard
         }
 
         /// <summary>
+        /// 新建子级分类菜单
+        /// </summary>
+        private void CreateSubMenu(object sender, RoutedEventArgs e)
+        {
+            MenuInfo parentMenu = ((MenuItem)sender).Tag as MenuInfo;
+            if (parentMenu == null && MenuListBox.SelectedItem != null)
+            {
+                parentMenu = MenuListBox.SelectedItem as MenuInfo;
+            }
+
+            string subName = parentMenu != null ? parentMenu.MenuName + "-子分类" : "子分类";
+            MenuInfo subInfo = new MenuInfo()
+            {
+                MenuEdit = Visibility.Collapsed,
+                MenuId = System.Guid.NewGuid().ToString(),
+                MenuName = subName,
+                ParentId = parentMenu?.MenuId
+            };
+
+            if (parentMenu != null)
+            {
+                parentMenu.Children.Add(subInfo);
+                int parentIndex = appData.MenuList.IndexOf(parentMenu);
+                if (parentIndex >= 0 && parentIndex < appData.MenuList.Count - 1)
+                {
+                    appData.MenuList.Insert(parentIndex + 1, subInfo);
+                }
+                else
+                {
+                    appData.MenuList.Add(subInfo);
+                }
+            }
+            else
+            {
+                appData.MenuList.Add(subInfo);
+            }
+
+            MenuListBox.SelectedItem = subInfo;
+            appData.AppConfig.SelectedMenuIndex = MenuListBox.SelectedIndex;
+            appData.AppConfig.SelectedMenuIcons = subInfo.IconList;
+        }
+
+        /// <summary>
         /// 创建实时文件菜单
         /// </summary>
         /// <param name="sender"></param>
@@ -215,16 +256,16 @@ namespace GeekDesk.Control.UserControls.PannelCard
         {
             try
             {
-                CommonOpenFileDialog dialog = new CommonOpenFileDialog
+                OpenFolderDialog dialog = new OpenFolderDialog
                 {
-                    IsFolderPicker = true,
-                    Title = "选择关联文件夹"
+                    Title = "选择关联文件夹",
+                    Multiselect = false
                 };
-                if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+                if (dialog.ShowDialog() == true)
                 {
                     string menuId = System.Guid.NewGuid().ToString();
                        
-                    string path = dialog.FileName;
+                    string path = dialog.FolderName;
 
                     MenuInfo menuInfo = new MenuInfo
                     {

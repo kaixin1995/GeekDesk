@@ -1,0 +1,50 @@
+<UserControl x:Class="GeekDesk.Control.UserControls.PannelCard.AccordionCardControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:hc="https://handyorg.github.io/handycontrol"
+             xmlns:cvt="clr-namespace:GeekDesk.Converts"
+             xmlns:cst="clr-namespace:GeekDesk.Constant"
+             xmlns:component="clr-namespace:GeekDesk.CustomComponent.VirtualizingWrapPanel"
+             xmlns:xf="clr-namespace:XamlFlair;assembly=XamlFlair.WPF"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="360"
+             AllowDrop="True">
+
+    <UserControl.Resources>
+        <cvt:OpcityConvert x:Key="OpcityConvert"/>
+        <cvt:Boolean2VisibilityConverter x:Key="BoolToVisibilityConverter"/>
+
+        <Style x:Key="DrawerIconImageStyle" TargetType="Image">
+            <Setter Property="Width" Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=DataContext.AppConfig.ImageWidth, Mode=OneWay}"/>
+            <Setter Property="Height" Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=DataContext.AppConfig.ImageHeight, Mode=OneWay}"/>
+            <Setter Property="Source" Value="{Binding BitmapImage}"/>
+            <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality"/>
+        </Style>
+
+        <!-- 抽屉分类标题右键菜单 -->
+        <ContextMenu x:Key="CategoryContextMenu" Width="180">
+            <MenuItem Header="新建分类" Click="CreateMenu_Click"/>
+            <MenuItem Header="新建关联菜单" Click="CreateLinkMenu_Click"/>
+            <MenuItem Header="重命名分类" Click="RenameMenu_Click" Tag="{Binding}"/>
+            <MenuItem Header="加密此分类" Click="EncryptMenu_Click" Tag="{Binding}"/>
+            <Separator/>
+            <MenuItem Header="删除分类" Click="DeleteMenu_Click" Tag="{Binding}"/>
+        </ContextMenu>
+
+        <!-- 图标项右键菜单 -->
+        <ContextMenu x:Key="IconContextMenu" Width="200">
+            <MenuItem Header="以管理员方式运行" Click="IconAdminStart_Click" Tag="{Binding}"/>
+            <MenuItem Header="打开文件所在位置" Click="ShowInExplorer_Click" Tag="{Binding}"/>
+            <MenuItem Header="添加URL项目" Click="AddUrlIcon_Click"/>
+            <MenuItem Header="添加系统项目" Click="AddSystemIcon_Click"/>
+            <MenuItem Header="资源管理器菜单" Click="SystemContextMenu_Click" Tag="{Binding}"/>
+            <MenuItem Header="属性" Click="IconProperty_Click" Tag="{Binding}"/>
+            <Separator/>
+            <MenuItem Header="从分类中移除" Click="RemoveIcon_Click" Tag="{Binding}"/>
+        </ContextMenu>
+    </UserControl.Resources>
+
+    <Grid Background="Transparent" x:Name="RootGrid"/>
+</UserControl>

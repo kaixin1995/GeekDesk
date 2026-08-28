@@ -86,27 +86,32 @@ namespace GeekDesk.Util
             
 
             Bitmap bmp = ico.ToBitmap();
-            MemoryStream strm = new MemoryStream();
-
-            ImageCodecInfo myImageCodecInfo = GetEncoderInfo("image/png");
-            Encoder myEncoder = Encoder.Quality;
-            EncoderParameter myEncoderParameter = new EncoderParameter(myEncoder, 75L);
-            EncoderParameters myEncoderParameters = new EncoderParameters(1);
-            myEncoderParameters.Param[0] = myEncoderParameter;
-
-            bmp.Save(strm, myImageCodecInfo, myEncoderParameters);
-
-            BitmapImage bmpImage = new BitmapImage();
-            bmpImage.BeginInit();
-            strm.Seek(0, SeekOrigin.Begin);
-            bmpImage.StreamSource = strm;
-            bmpImage.EndInit();
-            if (ip != IntPtr.Zero)
+            using (MemoryStream strm = new MemoryStream())
             {
-                Shell32.DestroyIcon(ip);
+                ImageCodecInfo myImageCodecInfo = GetEncoderInfo("image/png");
+                Encoder myEncoder = Encoder.Quality;
+                EncoderParameter myEncoderParameter = new EncoderParameter(myEncoder, 75L);
+                EncoderParameters myEncoderParameters = new EncoderParameters(1);
+                myEncoderParameters.Param[0] = myEncoderParameter;
+
+                bmp.Save(strm, myImageCodecInfo, myEncoderParameters);
+                strm.Seek(0, SeekOrigin.Begin);
+
+                BitmapImage bmpImage = new BitmapImage();
+                bmpImage.BeginInit();
+                bmpImage.CacheOption = BitmapCacheOption.OnLoad;
+                bmpImage.StreamSource = strm;
+                bmpImage.EndInit();
+                bmpImage.Freeze();
+
+                if (ip != IntPtr.Zero)
+                {
+                    Shell32.DestroyIcon(ip);
+                }
+                bmp.Dispose();
+                if (ico != null) ico.Dispose();
+                return bmpImage;
             }
-            DeleteObject(bmp.GetHbitmap());
-            return bmpImage.Clone();
         }
 
         private static ImageCodecInfo GetEncoderInfo(String mimeType)

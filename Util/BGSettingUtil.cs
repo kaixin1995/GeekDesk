@@ -1,4 +1,4 @@
-﻿using GeekDesk.Constant;
+using GeekDesk.Constant;
 using GeekDesk.ViewModel;
 using System;
 using System.Windows;
@@ -11,36 +11,65 @@ namespace GeekDesk.Util
     public class BGSettingUtil
     {
         private static readonly AppConfig appConfig = MainWindow.appData.AppConfig;
+
         public static void BGSetting()
         {
+            if (appConfig.BitmapImage == null && appConfig.GradientBGParam == null)
+            {
+                // 音速启动 (Sonic Launcher) 经典金属银灰质感渐变背景
+                LinearGradientBrush sonicBrush = new LinearGradientBrush
+                {
+                    StartPoint = new Point(0, 0),
+                    EndPoint = new Point(0, 1)
+                };
+                sonicBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#DDE2E8"), 0.0));
+                sonicBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#BAC3CE"), 0.08));
+                sonicBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#FFFFFF"), 0.081));
+                sonicBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#F8F9FA"), 1.0));
+                MainWindow.mainWindow.BGBorder.Background = sonicBrush;
+                return;
+            }
+
             if (appConfig.BGStyle == BGStyle.ImgBac || appConfig.BGStyle == 0)
             {
-                Image image = new Image
+                if (appConfig.BitmapImage != null)
                 {
-                    Effect = new BlurEffect()
+                    Image image = new Image
                     {
-                        Radius = appConfig.BlurValue
-                    },
-                    Margin = new Thickness(-30),
-                    Source = appConfig.BitmapImage,
-                    Opacity = (double)(Math.Round((decimal)(appConfig.BgOpacity / 100.00), 2))
-                };
+                        Effect = new BlurEffect()
+                        {
+                            Radius = appConfig.BlurValue
+                        },
+                        Margin = new Thickness(-30),
+                        Source = appConfig.BitmapImage,
+                        Opacity = (double)(Math.Round((decimal)(appConfig.BgOpacity / 100.00), 2))
+                    };
 
+                    Grid grid = new Grid
+                    {
+                        ClipToBounds = true
+                    };
+                    grid.Children.Add(image);
 
-                //binding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
-                //image.SetBinding(Image.OpacityProperty, binding);
-
-                Grid grid = new Grid
+                    VisualBrush vb = new VisualBrush
+                    {
+                        Visual = grid
+                    };
+                    MainWindow.mainWindow.BGBorder.Background = vb;
+                }
+                else
                 {
-                    ClipToBounds = true
-                };
-                grid.Children.Add(image);
-
-                VisualBrush vb = new VisualBrush
-                {
-                    Visual = grid
-                };
-                MainWindow.mainWindow.BGBorder.Background = vb;
+                    LinearGradientBrush sonicBrush = new LinearGradientBrush
+                    {
+                        StartPoint = new Point(0, 0),
+                        EndPoint = new Point(0, 1)
+                    };
+                    sonicBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#DDE2E8"), 0.0));
+                    sonicBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#BAC3CE"), 0.08));
+                    sonicBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#FFFFFF"), 0.081));
+                    sonicBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#F8F9FA"), 1.0));
+                    MainWindow.mainWindow.BGBorder.Background = sonicBrush;
+                }
             }
             else
             {
@@ -62,8 +91,6 @@ namespace GeekDesk.Util
                 lgb.Opacity = (double)(Math.Round((decimal)(appConfig.BgOpacity / 100.00), 2));
                 MainWindow.mainWindow.BGBorder.Background = lgb;
             }
-
         }
-
     }
 }

@@ -25,10 +25,11 @@ namespace GeekDesk.Util
             {
                 BitmapImage image = new BitmapImage();
                 image.BeginInit();
-                image.CacheOption = BitmapCacheOption.OnLoad; // here
-                RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.LowQuality);
+                image.CacheOption = BitmapCacheOption.OnLoad;
+                RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.HighQuality);
                 image.StreamSource = ms;
                 image.EndInit();
+                image.Freeze(); // 冻结 BitmapImage 跨线程安全且极大提升渲染与内存性能
                 return image;
             }
         }

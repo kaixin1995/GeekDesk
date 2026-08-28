@@ -247,34 +247,8 @@ namespace GeekDesk.Control.Other
         {
             if (MainWindow.appData.AppConfig.EnableEveryThing == true && EveryThingUtil.HasNext())
             {
-                HandyControl.Controls.ScrollViewer sv = sender as HandyControl.Controls.ScrollViewer;
-                if (sv.ExtentHeight - (sv.ActualHeight + sv.VerticalOffset) < 100 
-                    && EveryThingUtil.HasNext()
-                    && !EveryThingRuning)
-                {
-                    EveryThingRuning = true;
-                    MainWindow.mainWindow.RightCard.Loading_RightCard.Visibility = Visibility.Visible;
-                    int everyThingCount = Convert.ToInt32(MainWindow.mainWindow.EverythingSearchCount.Text);
-
-                    ObservableCollection<IconInfo> resList = this.DataContext as ObservableCollection<IconInfo>;
-
-                    ThreadPool.QueueUserWorkItem(state =>
-                    {
-                        ObservableCollection<IconInfo> searchRes = EveryThingUtil.NextPage();
-                        this.Dispatcher.Invoke(() =>
-                        {
-                            everyThingCount += searchRes.Count;
-                            MainWindow.mainWindow.EverythingSearchCount.Text = Convert.ToString(everyThingCount);
-                            foreach (IconInfo info in searchRes)
-                            {
-                                resList.Add(info);
-                            }
-                            MainWindow.mainWindow.RightCard.Loading_RightCard.Visibility = Visibility.Collapsed;
-                            EveryThingRuning = false;
-                        });
-                    });
-
-                }
+                // 纯净快捷方式检索模式，无分页 Everything 查询
+                return;
             }
         }
 

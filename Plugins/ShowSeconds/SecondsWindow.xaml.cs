@@ -1,9 +1,11 @@
-﻿using GeekDesk.Util;
+﻿using GeekDesk;
+using GeekDesk.MyThread;
+using GeekDesk.Util;
 using Gma.System.MouseKeyHook;
 using ShowSeconds.Common;
-using GeekDesk.Util;
 using ShowSeconds.ViewModel;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Drawing;
@@ -11,7 +13,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -22,9 +23,6 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
-using GeekDesk.MyThread;
-using GeekDesk;
-using System.Collections;
 
 namespace ShowSeconds
 {
@@ -60,14 +58,12 @@ namespace ShowSeconds
 
             try
             {
-
                 Hashtable settings = (Hashtable)ConfigurationManager.GetSection("ShowSecondsSettings");
-
                 lProportion = Convert.ToDouble(settings["LProportion"]);
                 tProportion = Convert.ToDouble(settings["TProportion"]);
                 sleepTime = Convert.ToInt32(settings["DelayTime"]);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 lProportion = 0.82;
                 tProportion = 0.03;

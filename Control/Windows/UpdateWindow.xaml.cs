@@ -52,7 +52,7 @@ namespace GeekDesk.Control.Windows
 
         private void DataHandle(JObject jo)
         {
-            Title.Text = StringUtil.IsEmpty(jo["title"]) ? "" : jo["title"].ToString();
+            UpdateTitle.Text = StringUtil.IsEmpty(jo["title"]) ? "" : jo["title"].ToString();
             SubTitle.Text = StringUtil.IsEmpty(jo["subTitle"]) ? "" : jo["subTitle"].ToString();
             MsgTitle.Text = StringUtil.IsEmpty(jo["msgTitle"]) ? "" : jo["msgTitle"].ToString();
             JArray ja = JArray.Parse(StringUtil.IsEmpty(jo["msg"]) ? "[]" : jo["msg"].ToString());
@@ -134,26 +134,19 @@ namespace GeekDesk.Control.Windows
         }
 
 
+        private static readonly System.Net.Http.HttpClient updateHttpClient = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+
         private bool ReqGitUrl(String url)
         {
-            HttpWebResponse myResponse = null;
             try
             {
-                ServicePointManager.Expect100Continue = true;
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-                //创建Web访问对  象
-                WebRequest myRequest = WebRequest.Create(url);
-
-                myRequest.ContentType = "text/plain; charset=utf-8";
-                //通过Web访问对象获取响应内容
-                myResponse = (HttpWebResponse)myRequest.GetResponse();
+                var response = updateHttpClient.GetAsync(url).GetAwaiter().GetResult();
+                return response.IsSuccessStatusCode;
             }
             catch 
             {
                 return false;
             }
-
-            return myResponse != null && myResponse.StatusCode == HttpStatusCode.OK;
         }
 
         private void OpenLinkUrl(String url)

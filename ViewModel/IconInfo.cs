@@ -1,5 +1,6 @@
-﻿using GeekDesk.Constant;
+using GeekDesk.Constant;
 using GeekDesk.Util;
+using Newtonsoft.Json;
 using System;
 using System.ComponentModel;
 using System.Windows.Media.Imaging;
@@ -16,27 +17,22 @@ namespace GeekDesk.ViewModel
         private string name; //文件名
         private int count = 0; //打开次数
         [field: NonSerialized]
+        [JsonIgnore]
         private BitmapImage bitmapImage; //位图
         private byte[] imageByteArr; //图片 byte数组
         private string content; //显示信息
-        private bool adminStartUp = false; //始终管理员方式启动  默认否
+        private bool adminStartUp = false; //始终管理员方式启动 默认否
         private byte[] defaultImage; //默认图标
         private string startArg; //启动参数
         private string lnkPath;
-
         private string relativePath; //相对路径
-
         private IconType iconType = IconType.OTHER;
-
         private bool isChecked = false; //是否选中
 
-
+        [JsonIgnore]
         public bool IsChecked_NoWrite
         {
-            get
-            {
-                return isChecked;
-            }
+            get => isChecked;
             set
             {
                 isChecked = value;
@@ -44,24 +40,16 @@ namespace GeekDesk.ViewModel
             }
         }
 
+        [JsonIgnore]
         public string RelativePath_NoWrite
         {
-            get
-            {
-                return relativePath;
-            }
-            set
-            {
-                relativePath = value;
-            }
+            get => relativePath;
+            set => relativePath = value;
         }
 
         public string RelativePath
         {
-            get
-            {
-                return relativePath;
-            }
+            get => relativePath;
             set
             {
                 relativePath = value;
@@ -69,23 +57,16 @@ namespace GeekDesk.ViewModel
             }
         }
 
+        [JsonIgnore]
         public string LnkPath_NoWrite
         {
-            get
-            {
-                return lnkPath;
-            }
-            set
-            {
-                lnkPath = value;
-            }
+            get => lnkPath;
+            set => lnkPath = value;
         }
+
         public string LnkPath
         {
-            get
-            {
-                return lnkPath;
-            }
+            get => lnkPath;
             set
             {
                 lnkPath = value;
@@ -95,26 +76,19 @@ namespace GeekDesk.ViewModel
 
         public string StartArg
         {
-            get
-            {
-                return startArg;
-            }
+            get => startArg;
             set
             {
                 startArg = value;
                 OnPropertyChanged("StartArg");
             }
         }
+
+        [JsonIgnore]
         public string StartArg_NoWrite
         {
-            get
-            {
-                return startArg;
-            }
-            set
-            {
-                startArg = value;
-            }
+            get => startArg;
+            set => startArg = value;
         }
 
         public IconType IconType
@@ -133,10 +107,7 @@ namespace GeekDesk.ViewModel
 
         public byte[] DefaultImage
         {
-            get
-            {
-                return defaultImage;
-            }
+            get => defaultImage;
             set
             {
                 defaultImage = value;
@@ -144,24 +115,16 @@ namespace GeekDesk.ViewModel
             }
         }
 
+        [JsonIgnore]
         public byte[] DefaultImage_NoWrite
         {
-            get
-            {
-                return defaultImage;
-            }
-            set
-            {
-                defaultImage = value;
-            }
+            get => defaultImage;
+            set => defaultImage = value;
         }
 
         public bool AdminStartUp
         {
-            get
-            {
-                return adminStartUp;
-            }
+            get => adminStartUp;
             set
             {
                 adminStartUp = value;
@@ -171,10 +134,7 @@ namespace GeekDesk.ViewModel
 
         public int Count
         {
-            get
-            {
-                return count;
-            }
+            get => count;
             set
             {
                 count = value;
@@ -192,10 +152,7 @@ namespace GeekDesk.ViewModel
 
         public string Name
         {
-            get
-            {
-                return name;
-            }
+            get => name;
             set
             {
                 name = value;
@@ -211,12 +168,10 @@ namespace GeekDesk.ViewModel
             }
         }
 
+        [JsonIgnore]
         public string Name_NoWrite
         {
-            get
-            {
-                return name;
-            }
+            get => name;
             set
             {
                 name = value;
@@ -233,10 +188,7 @@ namespace GeekDesk.ViewModel
 
         public string Path
         {
-            get
-            {
-                return path;
-            }
+            get => path;
             set
             {
                 path = value;
@@ -252,12 +204,10 @@ namespace GeekDesk.ViewModel
             }
         }
 
+        [JsonIgnore]
         public string Path_NoWrite
         {
-            get
-            {
-                return path;
-            }
+            get => path;
             set
             {
                 path = value;
@@ -272,14 +222,10 @@ namespace GeekDesk.ViewModel
             }
         }
 
-
+        [JsonIgnore]
         public BitmapImage BitmapImage
         {
-            get
-            {
-
-                return ImageUtil.ByteArrToImage(ImageByteArr);
-            }
+            get => ImageUtil.ByteArrToImage(ImageByteArr);
             set
             {
                 bitmapImage = value;
@@ -288,12 +234,10 @@ namespace GeekDesk.ViewModel
             }
         }
 
+        [JsonIgnore]
         public BitmapImage BitmapImage_NoWrite
         {
-            get
-            {
-                return ImageUtil.ByteArrToImage(ImageByteArr_NoWrite);
-            }
+            get => ImageUtil.ByteArrToImage(ImageByteArr_NoWrite);
             set
             {
                 bitmapImage = value;
@@ -302,14 +246,9 @@ namespace GeekDesk.ViewModel
             }
         }
 
-
         public byte[] ImageByteArr
         {
-            get
-            {
-
-                return imageByteArr;
-            }
+            get => imageByteArr;
             set
             {
                 imageByteArr = value;
@@ -317,25 +256,16 @@ namespace GeekDesk.ViewModel
             }
         }
 
+        [JsonIgnore]
         public byte[] ImageByteArr_NoWrite
         {
-            get
-            {
-
-                return imageByteArr;
-            }
-            set
-            {
-                imageByteArr = value;
-            }
+            get => imageByteArr;
+            set => imageByteArr = value;
         }
 
         public string Content
         {
-            get
-            {
-                return content;
-            }
+            get => content;
             set
             {
                 content = value;
@@ -343,31 +273,22 @@ namespace GeekDesk.ViewModel
             }
         }
 
-
+        [JsonIgnore]
         public string Content_NoWrite
         {
-            get
-            {
-                return content;
-            }
-            set
-            {
-                content = value;
-            }
+            get => content;
+            set => content = value;
         }
-
 
         [field: NonSerializedAttribute()]
         public event PropertyChangedEventHandler PropertyChanged;
         private void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            if (propertyName!=null && !propertyName.Contains("NoWrite"))
+            if (propertyName != null && !propertyName.Contains("NoWrite"))
             {
                 CommonCode.SaveAppData(MainWindow.appData, Constants.DATA_FILE_PATH);
             }
         }
-
-
     }
 }

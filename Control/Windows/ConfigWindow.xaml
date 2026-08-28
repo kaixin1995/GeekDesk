@@ -1,4 +1,4 @@
-﻿<hc:Window x:Class="GeekDesk.Control.Windows.ConfigWindow"
+<hc:Window x:Class="GeekDesk.Control.Windows.ConfigWindow"
            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -6,131 +6,125 @@
            xmlns:hc="https://handyorg.github.io/handycontrol"
            xmlns:xf="clr-namespace:XamlFlair;assembly=XamlFlair.WPF"
            xmlns:local="clr-namespace:GeekDesk" xmlns:viewmodel="clr-namespace:GeekDesk.ViewModel" d:DataContext="{d:DesignInstance Type=viewmodel:AppConfig}"
-           Title="Setting"
+           Title="设置"
            mc:Ignorable="d"
            WindowStartupLocation="CenterScreen"
-           Height="550" 
-           Width="750" 
+           Height="560" 
+           Width="760" 
            WindowStyle="None"
            ResizeMode="NoResize"
            AllowsTransparency="True"
-           Background="#00FFFFFF" ShowInTaskbar="False"
+           Background="Transparent" ShowInTaskbar="False"
            BorderThickness="0"
            Focusable="True"
            KeyDown="OnKeyDown"
            >
 
-    <Grid Margin="30">
-
+    <Grid Margin="20">
         <Grid.Effect>
-            <DropShadowEffect BlurRadius="20" Direction="-90" Color="Gray"
-                              RenderingBias="Quality" ShadowDepth="2"/>
+            <DropShadowEffect BlurRadius="25" Direction="-90" Color="#444444"
+                              RenderingBias="Quality" ShadowDepth="3" Opacity="0.35"/>
         </Grid.Effect>
+
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Panel.ZIndex="9999" hc:Growl.GrowlParent="False" hc:Growl.Token="ConfigWindowAskGrowl" Grid.Column="1" Grid.Row="1"/>
 
-        <Grid  hc:Dialog.Token="ConfigWindowDialog">
-            <hc:DialogContainer  Margin="10">
-                <Border Style="{StaticResource BorderBG}">
-                    <Grid Background="Transparent">
+        <Grid hc:Dialog.Token="ConfigWindowDialog">
+            <hc:DialogContainer>
+                <!-- 苹果灰磨砂与深浅分明的高级设置面板 -->
+                <Border Background="#F4F5F7" BorderBrush="#D1D5DB" BorderThickness="1" CornerRadius="12">
+                    <Grid>
                         <Grid.RowDefinitions>
+                            <!-- 顶部拖动与标题栏 -->
+                            <RowDefinition Height="42"/>
+                            <!-- 内容主区域 -->
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="140"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        
 
-                        <hc:Card Grid.Row="0" Grid.Column="0" Background="Transparent" BorderThickness="0">
+                        <!-- 顶部标题栏 -->
+                        <Border Grid.Row="0" Background="#E5E7EB" BorderBrush="#D1D5DB" BorderThickness="0,0,0,1" CornerRadius="11,11,0,0" MouseDown="DragMove">
+                            <DockPanel LastChildFill="True" Margin="14,0,14,0" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" DockPanel.Dock="Left">
+                                    <Path Data="{StaticResource Motion}" Fill="#374151" Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBlock Text="GeekDesk 设置" FontSize="14" FontWeight="SemiBold" Foreground="#1F2937" VerticalAlignment="Center"/>
+                                </StackPanel>
 
-                            <hc:SideMenu AutoSelect="True" Background="Transparent" Margin="1,7,0,3">
-                                <hc:SideMenu.ItemContainerStyle>
-                                    <Style TargetType="hc:SideMenuItem" BasedOn="{StaticResource MyMenuStyle}"/>
-                                </hc:SideMenu.ItemContainerStyle>
+                                <Button Width="24" Height="24" Click="Close_Button_Click" Background="Transparent" BorderThickness="0" Padding="0"
+                                        HorizontalAlignment="Right" VerticalAlignment="Center" DockPanel.Dock="Right" FocusVisualStyle="{x:Null}" ToolTip="关闭">
+                                    <Path Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" 
+                                          Fill="#6B7280" Width="14" Height="14" Stretch="Uniform">
+                                        <Path.Style>
+                                            <Style TargetType="Path">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Button}}" Value="True">
+                                                        <Setter Property="Fill" Value="#EF4444"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Path.Style>
+                                    </Path>
+                                </Button>
+                            </DockPanel>
+                        </Border>
 
-                                <hc:SideMenuItem Header="关于"
-                                     IsSelected="True"
-                                     Selected="MemuClick"
-                                     Tag="About"
-                                     >
-                                    <hc:SideMenuItem.Icon>
-                                        <Button Background="Transparent" 
-                                    IsEnabled="False"
-                                    Opacity="0.9"
-                                    BorderThickness="0"
-                                    hc:IconElement.Geometry="{StaticResource About}" 
-                                    hc:IconElement.Height="18"
-                                    hc:IconElement.Width="18"
-                                    HorizontalAlignment="Right"
-                                    />
-                                    </hc:SideMenuItem.Icon>
-                                </hc:SideMenuItem>
-                                <hc:SideMenuItem Header="显示设置"
-                                     Tag="Theme"
-                                     Selected="MemuClick">
-                                    <hc:SideMenuItem.Icon>
-                                        <Button Background="Transparent" 
-                                    IsEnabled="False"
-                                    Opacity="1"
-                            BorderThickness="0"
-                            hc:IconElement.Geometry="{StaticResource Pannel}"
-                            hc:IconElement.Height="18"
-                            hc:IconElement.Width="18"
-                            HorizontalAlignment="Right"
-                            />
-                                    </hc:SideMenuItem.Icon>
-                                </hc:SideMenuItem>
+                        <!-- 下方主体配置区域 -->
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
 
-                                <hc:SideMenuItem Header="动作"
-                                     Tag="Motion"
-                                     Selected="MemuClick">
-                                    <hc:SideMenuItem.Icon>
-                                        <Button Background="Transparent" 
-                                    IsEnabled="False"
-                                    Opacity="1"
-                            BorderThickness="0"
-                            hc:IconElement.Geometry="{StaticResource Motion}"
-                            hc:IconElement.Height="18"
-                            hc:IconElement.Width="18"
-                            HorizontalAlignment="Right"
-                            />
-                                    </hc:SideMenuItem.Icon>
-                                </hc:SideMenuItem>
-                                <hc:SideMenuItem Header="其它"
-                                     Tag="Other"
-                                     Selected="MemuClick">
-                                    <hc:SideMenuItem.Icon>
-                                        <Button Background="Transparent" 
-                                    IsEnabled="False"
-                                    Opacity="1"
-                            BorderThickness="0"
-                            hc:IconElement.Geometry="{StaticResource Other}"
-                            hc:IconElement.Height="18"
-                            hc:IconElement.Width="18"
-                            HorizontalAlignment="Right"
-                            />
-                                    </hc:SideMenuItem.Icon>
-                                </hc:SideMenuItem>
-                            </hc:SideMenu>
-                        </hc:Card>
-                        <hc:ScrollViewer  Grid.Row="0" Grid.Column="1" BorderThickness="0" Margin="0,5,1,5">
-                            <UniformGrid x:Name="UFG" xf:Animations.Primary="{xf:Animate BasedOn={StaticResource FadeIn}, Event=Visibility, Delay=0}">
-                                <!--<hc:TransitioningContentControl TransitionMode="Left2RightWithFade">-->
-                                    <hc:Card x:Name="RightCard" BorderThickness="0"  MouseDown="DragMove">
-                                        <hc:Card.Background>
-                                            <SolidColorBrush  Opacity="0"/>
-                                        </hc:Card.Background>
-                                    </hc:Card>
-                                <!--</hc:TransitioningContentControl>-->
-                            </UniformGrid>
-                        </hc:ScrollViewer>
+                            <!-- 左侧侧边栏导航 -->
+                            <Border Grid.Column="0" Background="#E5E7EB" BorderBrush="#D1D5DB" BorderThickness="0,0,1,0" CornerRadius="0,0,0,11">
+                                <hc:SideMenu AutoSelect="True" Background="Transparent" Margin="6,12,6,12">
+                                    <hc:SideMenu.ItemContainerStyle>
+                                        <Style TargetType="hc:SideMenuItem" BasedOn="{StaticResource MyMenuStyle}"/>
+                                    </hc:SideMenu.ItemContainerStyle>
 
-                        <Button Width="22" Height="22" Click="Close_Button_Click" Style="{StaticResource ButtonIcon}" Foreground="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" hc:IconElement.Geometry="{StaticResource ErrorGeometry}" Padding="0" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,10,10,0" Grid.Column="1"/>
+                                    <hc:SideMenuItem Header="关于软件"
+                                                     IsSelected="True"
+                                                     Selected="MemuClick"
+                                                     Tag="About">
+                                        <hc:SideMenuItem.Icon>
+                                            <Path Data="{StaticResource About}" Fill="#3B82F6" Width="16" Height="16" Stretch="Uniform"/>
+                                        </hc:SideMenuItem.Icon>
+                                    </hc:SideMenuItem>
+
+                                    <hc:SideMenuItem Header="外观与主题"
+                                                     Tag="Theme"
+                                                     Selected="MemuClick">
+                                        <hc:SideMenuItem.Icon>
+                                            <Path Data="{StaticResource Pannel}" Fill="#10B981" Width="16" Height="16" Stretch="Uniform"/>
+                                        </hc:SideMenuItem.Icon>
+                                    </hc:SideMenuItem>
+
+                                    <hc:SideMenuItem Header="动作与交互"
+                                                     Tag="Motion"
+                                                     Selected="MemuClick">
+                                        <hc:SideMenuItem.Icon>
+                                            <Path Data="{StaticResource Motion}" Fill="#F59E0B" Width="16" Height="16" Stretch="Uniform"/>
+                                        </hc:SideMenuItem.Icon>
+                                    </hc:SideMenuItem>
+
+                                    <hc:SideMenuItem Header="系统与选项"
+                                                     Tag="Other"
+                                                     Selected="MemuClick">
+                                        <hc:SideMenuItem.Icon>
+                                            <Path Data="{StaticResource Other}" Fill="#8B5CF6" Width="16" Height="16" Stretch="Uniform"/>
+                                        </hc:SideMenuItem.Icon>
+                                    </hc:SideMenuItem>
+                                </hc:SideMenu>
+                            </Border>
+
+                            <!-- 右侧配置子内容区域 -->
+                            <hc:ScrollViewer Grid.Column="1" BorderThickness="0" Margin="10,6,6,6" IsInertiaEnabled="True">
+                                <UniformGrid x:Name="UFG" xf:Animations.Primary="{xf:Animate BasedOn={StaticResource FadeIn}, Event=Visibility, Delay=0}">
+                                    <hc:Card x:Name="RightCard" BorderThickness="0" Background="Transparent" MouseDown="DragMove"/>
+                                </UniformGrid>
+                            </hc:ScrollViewer>
+                        </Grid>
                     </Grid>
                 </Border>
-
             </hc:DialogContainer>
         </Grid>
     </Grid>
-
 </hc:Window>
