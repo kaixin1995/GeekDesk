@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Reflection;
 using System.Threading;
@@ -548,12 +549,12 @@ namespace GeekDesk.Util
             {
                 // Create an instance of HookProc.
                 MouseHookProcedure = new HookProc(MouseHookProc);
-                //install hook
+                // install hook using module handle compatible with single-file publishing
+                IntPtr hMod = NativeMethods.GetModuleHandle(Process.GetCurrentProcess().MainModule.ModuleName);
                 hMouseHook = SetWindowsHookEx(
                     WH_MOUSE_LL,
                     MouseHookProcedure,
-                    Marshal.GetHINSTANCE(
-                        Assembly.GetExecutingAssembly().GetModules()[0]),
+                    hMod,
                     0);
                 //If SetWindowsHookEx fails.
                 if (hMouseHook == 0)
@@ -572,12 +573,12 @@ namespace GeekDesk.Util
             {
                 // Create an instance of HookProc.
                 KeyboardHookProcedure = new HookProc(KeyboardHookProc);
-                //install hook
+                // install hook using module handle compatible with single-file publishing
+                IntPtr hMod = NativeMethods.GetModuleHandle(Process.GetCurrentProcess().MainModule.ModuleName);
                 hKeyboardHook = SetWindowsHookEx(
                     WH_KEYBOARD_LL,
                     KeyboardHookProcedure,
-                    Marshal.GetHINSTANCE(
-                    Assembly.GetExecutingAssembly().GetModules()[0]),
+                    hMod,
                     0);
                 //If SetWindowsHookEx fails.
                 if (hKeyboardHook == 0)

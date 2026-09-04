@@ -105,9 +105,7 @@ namespace GeekDesk.ViewModel
 
         private bool? secondsWindow; //秒数窗口 默认打开
 
-        private bool? enableEveryThing; //开启everything
-
-        private bool? alwaysTopmost; //是否置顶
+        private bool? alwaysTopmost = true; //默认置顶
 
         private bool? showIconTitle = true; //是否显示iconTitle
 
@@ -165,27 +163,13 @@ namespace GeekDesk.ViewModel
         {
             get
             {
-                if (alwaysTopmost == null) alwaysTopmost = false;
+                if (alwaysTopmost == null) alwaysTopmost = true;
                 return alwaysTopmost;
             }
             set
             {
                 alwaysTopmost = value;
                 OnPropertyChanged("AlwaysTopmost");
-            }
-        }
-
-        public bool? EnableEveryThing
-        {
-            get
-            {
-                if (enableEveryThing == null) enableEveryThing = false;
-                return enableEveryThing;
-            }
-            set
-            {
-                enableEveryThing = value;
-                OnPropertyChanged("EnableEveryThing");
             }
         }
 

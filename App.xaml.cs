@@ -25,14 +25,13 @@ namespace GeekDesk
 
         public App()
         {
-            // 配置 .NET 8 程序集动态解析，兼容 lib 与插件路径
+            // 配置 .NET 8 程序集动态解析，兼容 lib 路径
             AssemblyLoadContext.Default.Resolving += (context, assemblyName) =>
             {
                 string[] searchDirs = new string[]
                 {
                     AppDomain.CurrentDomain.BaseDirectory,
-                    Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "lib"),
-                    Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Plugins", "EveryThing", "lib")
+                    Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "lib")
                 };
 
                 foreach (string dir in searchDirs)

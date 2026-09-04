@@ -15,7 +15,7 @@ namespace GeekDesk.Control.UserControls.Config
         public AboutControl()
         {
             InitializeComponent();
-            AppInfo.Text += ConfigurationManager.AppSettings["Version"];
+            AppInfo.Text += Constants.APP_VERSION;
             string showPublicWeChat = ConfigurationManager.AppSettings["ShowPublicWeChat"];
             if ("Y".Equals(showPublicWeChat))
             {

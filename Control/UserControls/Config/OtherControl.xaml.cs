@@ -1,6 +1,5 @@
 ﻿using GeekDesk.Constant;
 using GeekDesk.MyThread;
-using GeekDesk.Plugins.EveryThing;
 using GeekDesk.Util;
 using GeekDesk.ViewModel;
 using ShowSeconds;
@@ -187,20 +186,8 @@ namespace GeekDesk.Control.UserControls.Config
             catch (Exception ex) { }
         }
 
-        /// <summary>
-        /// EveryThing插件开关
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void EveryThing_Changed(object sender, RoutedEventArgs e)
         {
-            if (MainWindow.appData.AppConfig.EnableEveryThing == true)
-            {
-                EveryThingUtil.EnableEveryThing(0);
-            } else
-            {
-                EveryThingUtil.DisableEveryThing(true);
-            }
         }
     }
 }

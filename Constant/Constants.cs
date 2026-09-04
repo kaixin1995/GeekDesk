@@ -14,6 +14,32 @@ namespace GeekDesk.Constant
         public static string MY_NAME = DEV ? "GeekDesk-D" : "GeekDesk";
 
         public static string MY_UUID = "8400A17AEEF7C029";
+
+        /// <summary>
+        /// 获取当前程序集版本号 (优先从 Assembly / FileVersion 读取)
+        /// </summary>
+        public static string APP_VERSION
+        {
+            get
+            {
+                try
+                {
+                    var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+                    var fvi = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location);
+                    if (!string.IsNullOrEmpty(fvi.FileVersion))
+                    {
+                        return fvi.FileVersion;
+                    }
+                    if (assembly.GetName().Version != null)
+                    {
+                        return assembly.GetName().Version.ToString();
+                    }
+                }
+                catch { }
+                return "1.0.0.1";
+            }
+        }
+
         /// <summary>
         /// app数据文件路径
         /// </summary>

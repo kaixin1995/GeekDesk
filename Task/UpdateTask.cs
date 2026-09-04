@@ -33,7 +33,7 @@ namespace GeekDesk.Task
             try
             {
                 string updateUrl = ConfigurationManager.AppSettings["GiteeUpdateUrl"];
-                string nowVersion = ConfigurationManager.AppSettings["Version"];
+                string nowVersion = Constants.APP_VERSION;
                 if (appConfig != null)
                 {
                     switch (appConfig.UpdateType)

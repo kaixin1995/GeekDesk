@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows7.0</TargetFramework>
@@ -22,8 +21,10 @@
     <TieredCompilation>true</TieredCompilation>
     <TieredCompilationQuickJit>true</TieredCompilationQuickJit>
     <NoWarn>$(NoWarn);NU1701;CS8981;CS0168;CS0219;CS0169;CS0414;CS0618;CS0108;CS0105;CS0649;CS0612;SYSLIB0014;SYSLIB0021;WFAC010;CA1416</NoWarn>
+    <Version>1.0.0.1</Version>
+    <AssemblyVersion>1.0.0.1</AssemblyVersion>
+    <FileVersion>1.0.0.1</FileVersion>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="HandyControl" Version="3.5.1" />
     <PackageReference Include="XamlFlair.WPF" Version="1.2.13" />
@@ -38,7 +39,6 @@
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
   </ItemGroup>
-
   <!-- 原生静态资源与图片 -->
   <ItemGroup>
     <Resource Include="Logo.ico" />
@@ -47,36 +47,9 @@
     <Resource Include="Resource\Iconfont\iconfont.js" />
     <Resource Include="Resource\Image\**\*" />
   </ItemGroup>
-
-  <!-- Everything 插件执行文件与动态库输出 -->
   <ItemGroup>
-    <Content Include="Plugins\EveryThing\32\Everything.exe">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <None Include="Plugins\EveryThing\32\Everything.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Plugins\EveryThing\32\Everything.lng">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <Content Include="Plugins\EveryThing\64\Everything.exe">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <None Include="Plugins\EveryThing\64\Everything.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Plugins\EveryThing\64\Everything.lng">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Plugins\EveryThing\lib\Everything32.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Plugins\EveryThing\lib\Everything64.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="Update.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
 </Project>

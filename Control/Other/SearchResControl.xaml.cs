@@ -1,6 +1,5 @@
 ﻿using GeekDesk.Constant;
 using GeekDesk.Control.Windows;
-using GeekDesk.Plugins.EveryThing;
 using GeekDesk.Util;
 using GeekDesk.ViewModel;
 using GeekDesk.ViewModel.Temp;
@@ -242,14 +241,8 @@ namespace GeekDesk.Control.Other
         }
 
 
-        private static volatile bool EveryThingRuning = false;
         private void VerticalCard_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
-            if (MainWindow.appData.AppConfig.EnableEveryThing == true && EveryThingUtil.HasNext())
-            {
-                // 纯净快捷方式检索模式，无分页 Everything 查询
-                return;
-            }
         }
 
 

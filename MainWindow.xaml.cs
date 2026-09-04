@@ -5,8 +5,6 @@ using GeekDesk.Control.UserControls.PannelCard;
 using GeekDesk.Control.Windows;
 using GeekDesk.Interface;
 using GeekDesk.MyThread;
-using GeekDesk.Plugins.EveryThing;
-using GeekDesk.Plugins.EveryThing.Constant;
 using GeekDesk.Task;
 using GeekDesk.Util;
 using GeekDesk.ViewModel;
@@ -281,6 +279,8 @@ namespace GeekDesk
             appData = CommonCode.GetAppDataByFile();
 
             this.DataContext = appData;
+            this.Topmost = true;
+            appData.AppConfig.AlwaysTopmost = true;
             if (appData.MenuList.Count == 0)
             {
                 appData.MenuList.Add(new MenuInfo() { MenuName = "常用软件", MenuId = System.Guid.NewGuid().ToString(), MenuEdit = Visibility.Collapsed });
@@ -735,11 +735,12 @@ namespace GeekDesk
             ConfigWindow.Show(appData.AppConfig, this);
         }
 
-        private static bool isPinned = false;
+        private static bool isPinned = true;
         private void ToggleTopmostClick(object sender, RoutedEventArgs e)
         {
             isPinned = !isPinned;
             this.Topmost = isPinned;
+            appData.AppConfig.AlwaysTopmost = isPinned;
             if (isPinned)
             {
                 MarginHide.StopHide();

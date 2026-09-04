@@ -34,6 +34,9 @@ namespace GeekDesk.Util
         [DllImport("User32.dll", EntryPoint = "DestroyIcon")]
         public static extern int DestroyIcon(IntPtr hIcon);
 
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        public static extern IntPtr GetModuleHandle(string lpModuleName);
+
         #region API 参数的常量定义
 
         public const uint SHGFI_ICON = 0x100;
