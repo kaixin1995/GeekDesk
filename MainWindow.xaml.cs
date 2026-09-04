@@ -326,6 +326,7 @@ namespace GeekDesk
             }
             //给任务栏图标一个名字
             BarIcon.Text = Constants.MY_NAME;
+            ApplyLauncherStyle();
 
             //注册热键
             if (true == appData.AppConfig.EnableAppHotKey)
@@ -579,7 +580,11 @@ namespace GeekDesk
 
             if (MarginHide.ON_HIDE)
             {
-                //修改贴边隐藏状态为未隐藏
+                //修改贴边隐藏状态为未隐藏并平滑滑出
+                if (MarginHide.IS_HIDE)
+                {
+                    MarginHide.ForceShowFromMargin();
+                }
                 MarginHide.IS_HIDE = false;
                 if (!CommonCode.MouseInWindow(mainWindow))
                 {
@@ -590,6 +595,10 @@ namespace GeekDesk
 
             MainWindow.mainWindow.Activate();
             mainWindow.Show();
+            if (appData.AppConfig.LauncherStyle == LauncherStyle.XiaoQDesk)
+            {
+                mainWindow.PositionOverTaskbar();
+            }
             //mainWindow.Visibility = Visibility.Visible;
             if (appData.AppConfig.AppAnimation)
             {
@@ -733,6 +742,78 @@ namespace GeekDesk
         private void MenuAbout_Click(object sender, RoutedEventArgs e)
         {
             ConfigWindow.Show(appData.AppConfig, this);
+        }
+
+        private void ToggleLauncherStyle_Click(object sender, RoutedEventArgs e)
+        {
+            if (appData.AppConfig.LauncherStyle == LauncherStyle.SonicDrawer)
+            {
+                appData.AppConfig.LauncherStyle = LauncherStyle.XiaoQDesk;
+            }
+            else
+            {
+                appData.AppConfig.LauncherStyle = LauncherStyle.SonicDrawer;
+            }
+            ApplyLauncherStyle();
+            CommonCode.SaveAppData(appData, Constants.DATA_FILE_PATH);
+        }
+
+        public void ApplyLauncherStyle()
+        {
+            if (appData.AppConfig.LauncherStyle == LauncherStyle.XiaoQDesk)
+            {
+                AccordionCard.Visibility = Visibility.Collapsed;
+                XiaoQCard.Visibility = Visibility.Visible;
+                // 小Q书桌宽卡片尺寸
+                if (this.Width < 500)
+                {
+                    this.Width = 620;
+                    this.Height = 440;
+                }
+                PositionOverTaskbar();
+            }
+            else
+            {
+                XiaoQCard.Visibility = Visibility.Collapsed;
+                AccordionCard.Visibility = Visibility.Visible;
+                // 音速启动窄条尺寸
+                if (this.Width > 420)
+                {
+                    this.Width = 320;
+                    this.Height = 560;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 贴靠任务栏正上方并播放自下而上展开动画
+        /// </summary>
+        public void PositionOverTaskbar()
+        {
+            try
+            {
+                Rect workArea = SystemParameters.WorkArea;
+                double screenHeight = SystemParameters.PrimaryScreenHeight;
+                double screenWidth = SystemParameters.PrimaryScreenWidth;
+
+                // 默认贴在屏幕底部任务栏正上方
+                double targetLeft = (screenWidth - this.Width) / 2;
+                double targetTop = workArea.Bottom - this.Height;
+
+                this.Left = targetLeft;
+                this.Top = targetTop;
+
+                // 自下而上平滑滑入动画
+                DoubleAnimation slideAnim = new DoubleAnimation
+                {
+                    From = workArea.Bottom,
+                    To = targetTop,
+                    Duration = TimeSpan.FromMilliseconds(180),
+                    EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+                };
+                this.BeginAnimation(TopProperty, slideAnim);
+            }
+            catch { }
         }
 
         private static bool isPinned = true;

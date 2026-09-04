@@ -106,6 +106,17 @@ namespace GeekDesk.ViewModel
         private bool? secondsWindow; //秒数窗口 默认打开
 
         private bool? alwaysTopmost = true; //默认置顶
+        private LauncherStyle launcherStyle = LauncherStyle.XiaoQDesk; //启动器风格 (默认支持小Q书桌模式)
+
+        public LauncherStyle LauncherStyle
+        {
+            get => launcherStyle;
+            set
+            {
+                launcherStyle = value;
+                OnPropertyChanged("LauncherStyle");
+            }
+        }
 
         private bool? showIconTitle = true; //是否显示iconTitle
 
@@ -1052,7 +1063,7 @@ namespace GeekDesk.ViewModel
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             if (propertyName != null && !propertyName.Contains("NoWrite"))
             {
-                CommonCode.SaveAppData(MainWindow.appData, Constants.DATA_FILE_PATH);
+                CommonCode.RequestSaveAppData();
             }
         }
 

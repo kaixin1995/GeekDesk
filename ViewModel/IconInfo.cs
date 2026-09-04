@@ -287,7 +287,7 @@ namespace GeekDesk.ViewModel
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             if (propertyName != null && !propertyName.Contains("NoWrite"))
             {
-                CommonCode.SaveAppData(MainWindow.appData, Constants.DATA_FILE_PATH);
+                CommonCode.RequestSaveAppData();
             }
         }
     }

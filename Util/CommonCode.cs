@@ -107,6 +107,33 @@ namespace GeekDesk.Util
         }
 
         private readonly static object _MyLock = new object();
+        private static readonly object _SaveDebounceLock = new object();
+        private static System.Threading.Timer _saveDebounceTimer;
+
+        /// <summary>
+        /// 异步防抖保存（针对高频属性变更，如动画、窗口坐标拖动、快速点击）
+        /// </summary>
+        public static void RequestSaveAppData()
+        {
+            lock (_SaveDebounceLock)
+            {
+                if (_saveDebounceTimer == null)
+                {
+                    _saveDebounceTimer = new System.Threading.Timer(state =>
+                    {
+                        if (MainWindow.appData != null)
+                        {
+                            SaveAppData(MainWindow.appData, Constants.DATA_FILE_PATH);
+                        }
+                    }, null, 500, System.Threading.Timeout.Infinite);
+                }
+                else
+                {
+                    _saveDebounceTimer.Change(500, System.Threading.Timeout.Infinite);
+                }
+            }
+        }
+
         private static bool isSaving = false;
 
         /// <summary>

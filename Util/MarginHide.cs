@@ -193,132 +193,106 @@ namespace GeekDesk.Util
         public static void StopHide()
         {
             ON_HIDE = false;
-            if (timer == null) return;
-            timer.Stop();
-            timer.Dispose();
-            timer = null;
-            //功能关闭 如果界面是隐藏状态  那么要显示界面 ↓
+            if (timer != null)
+            {
+                timer.Stop();
+                timer.Dispose();
+                timer = null;
+            }
             if (IS_HIDE)
             {
-                double screenLeft = SystemParameters.VirtualScreenLeft;
-                double screenTop = SystemParameters.VirtualScreenTop;
-                double screenWidth = SystemParameters.VirtualScreenWidth;
+                ForceShowFromMargin();
+            }
+        }
 
-                double windowWidth = window.Width;
+        public static void ForceShowFromMargin()
+        {
+            if (window == null) return;
+            double screenLeft = SystemParameters.VirtualScreenLeft;
+            double screenTop = SystemParameters.VirtualScreenTop;
+            double screenWidth = SystemParameters.VirtualScreenWidth;
+            double windowWidth = window.Width;
+            double windowTop = window.Top;
+            double windowLeft = window.Left;
 
-                double windowTop = window.Top;
-                double windowLeft = window.Left;
+            window.Visibility = Visibility.Visible;
+            window.Show();
 
-                window.Visibility = Visibility.Visible;
-                //左侧显示
-                if (windowLeft <= screenLeft - showMarginWidth)
-                {
-                    IS_HIDE = false;
-                    //FadeAnimation(0, 1);
-                    HideAnimation(windowLeft, screenLeft, Window.LeftProperty, HideType.LEFT_SHOW);
-                    return;
-                }
-
-                //上方显示
-                if (windowTop <= screenTop - showMarginWidth)
-                {
-                    IS_HIDE = false;
-                    //FadeAnimation(0, 1);
-                    HideAnimation(windowTop, screenTop, Window.TopProperty, HideType.TOP_SHOW);
-                    return;
-                }
-
-                //右侧显示
-                if (windowLeft + Math.Abs(screenLeft) == screenWidth - showMarginWidth)
-                {
-                    IS_HIDE = false;
-                    //FadeAnimation(0, 1);
-                    HideAnimation(windowLeft, screenWidth - Math.Abs(screenLeft) - windowWidth, Window.LeftProperty, HideType.RIGHT_SHOW);
-                    return;
-                }
+            if (CURRENT_DOCK == HideType.TOP_HIDE || windowTop <= screenTop - showMarginWidth + 10)
+            {
+                IS_HIDE = false;
+                HideAnimation(windowTop, screenTop, Window.TopProperty, HideType.TOP_SHOW);
+            }
+            else if (CURRENT_DOCK == HideType.LEFT_HIDE || windowLeft <= screenLeft - showMarginWidth + 10)
+            {
+                IS_HIDE = false;
+                HideAnimation(windowLeft, screenLeft, Window.LeftProperty, HideType.LEFT_SHOW);
+            }
+            else if (CURRENT_DOCK == HideType.RIGHT_HIDE || windowLeft + Math.Abs(screenLeft) >= screenWidth - showMarginWidth - 10)
+            {
+                IS_HIDE = false;
+                HideAnimation(windowLeft, screenWidth - Math.Abs(screenLeft) - windowWidth, Window.LeftProperty, HideType.RIGHT_SHOW);
+            }
+            else
+            {
+                IS_HIDE = false;
             }
         }
 
 
         private static void HideAnimation(double from, double to, DependencyProperty property, HideType hideType)
         {
-
-            new Thread(() =>
+            if (window == null) return;
+            window.Dispatcher.Invoke(() =>
             {
-                App.Current.Dispatcher.Invoke(() =>
+                double targetPos = to;
+                switch (hideType)
                 {
-
-                    switch (hideType)
-                    {
-                        case HideType.LEFT_SHOW:
-                            to -= 20;
-                            break;
-                        case HideType.RIGHT_SHOW:
-                            to += 20;
-                            break;
-                        case HideType.TOP_SHOW:
-                            to -= 20;
-                            break;
-                    }
-
-                    double abs = Math.Abs(Math.Abs(to) - Math.Abs(from));
-
-                    if (hideType <= HideType.RIGHT_SHOW)
-                    {
-                        animalTime = showTime;                        
-                    } else
-                    {
-                        animalTime = hideTime;
-                    }
-                    double subLen = abs / animalTime;
-                    int count = 0;
-                    while (count < animalTime)
-                    {
-                        switch (hideType)
-                        {
-                            case HideType.LEFT_HIDE:
-                                window.Left -= subLen;
-                                break;
-                            case HideType.LEFT_SHOW:
-                                window.Left += subLen;
-                                break;
-                            case HideType.RIGHT_HIDE:
-                                window.Left += subLen;
-                                break;
-                            case HideType.RIGHT_SHOW:
-                                window.Left -= subLen;
-                                break;
-                            case HideType.TOP_HIDE:
-                                window.Top -= subLen;
-                                break;
-                            case HideType.TOP_SHOW:
-                                window.Top += subLen;
-                                break;
-                        }
-                        count++;
-                        Thread.Sleep(1);
-                    }
-
-                    switch (hideType)
-                    {
-                        case HideType.TOP_HIDE:
-                            window.Top = to;
-                            break;
-                        case HideType.TOP_SHOW:
-                            window.Top = to;
-                            break;
-                        default:
-                        window.Left = to;
+                    case HideType.LEFT_SHOW:
+                        targetPos = to - 20;
                         break;
+                    case HideType.RIGHT_SHOW:
+                        targetPos = to + 20;
+                        break;
+                    case HideType.TOP_SHOW:
+                        targetPos = to - 20;
+                        break;
+                }
+
+                DependencyProperty animProperty = (hideType == HideType.TOP_HIDE || hideType == HideType.TOP_SHOW)
+                    ? Window.TopProperty
+                    : Window.LeftProperty;
+
+                double animDurationMs = (hideType <= HideType.RIGHT_SHOW) ? 120 : 180;
+
+                DoubleAnimation anim = new DoubleAnimation
+                {
+                    From = from,
+                    To = targetPos,
+                    Duration = TimeSpan.FromMilliseconds(animDurationMs),
+                    EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+                };
+
+                anim.Completed += (s, e) =>
+                {
+                    window.BeginAnimation(animProperty, null);
+                    if (animProperty == Window.TopProperty)
+                    {
+                        window.Top = targetPos;
                     }
+                    else
+                    {
+                        window.Left = targetPos;
+                    }
+
                     if (hideType > HideType.RIGHT_SHOW)
                     {
                         window.Visibility = Visibility.Collapsed;
                     }
-                });
-            }).Start();
-            
-            
+                };
+
+                window.BeginAnimation(animProperty, anim);
+            });
         }
 
         private static void FadeAnimation(double from, double to)
