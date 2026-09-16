@@ -19,10 +19,36 @@ namespace GeekDesk.Util
         };
 
         /// <summary>
-        /// 获取鼠标坐标
+        /// 获取鼠标坐标 (已转换为 WPF 逻辑坐标 DIPs，支持任意 DPI 缩放)
         /// </summary>
         /// <returns></returns>
         public static Point GetMousePosition()
+        {
+            var w32Mouse = new Win32Point();
+            GetCursorPos(ref w32Mouse);
+
+            if (MainWindow.mainWindow != null && MainWindow.mainWindow.IsLoaded)
+            {
+                try
+                {
+                    var source = PresentationSource.FromVisual(MainWindow.mainWindow);
+                    if (source?.CompositionTarget != null)
+                    {
+                        return source.CompositionTarget.TransformFromDevice.Transform(new Point(w32Mouse.X, w32Mouse.Y));
+                    }
+                }
+                catch { }
+            }
+
+            double scale = ScreenUtil.GetScreenScalingFactor();
+            if (scale <= 0) scale = 1.0;
+            return new Point(w32Mouse.X / scale, w32Mouse.Y / scale);
+        }
+
+        /// <summary>
+        /// 获取原始屏幕物理像素坐标
+        /// </summary>
+        public static Point GetPhysicalMousePosition()
         {
             var w32Mouse = new Win32Point();
             GetCursorPos(ref w32Mouse);

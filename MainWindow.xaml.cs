@@ -327,6 +327,7 @@ namespace GeekDesk
             //给任务栏图标一个名字
             BarIcon.Text = Constants.MY_NAME;
             ApplyLauncherStyle();
+            ApplyThemeStyle();
 
             //注册热键
             if (true == appData.AppConfig.EnableAppHotKey)
@@ -730,6 +731,15 @@ namespace GeekDesk
             if (MainSettingBtn.ContextMenu != null)
             {
                 MainSettingBtn.ContextMenu.PlacementTarget = MainSettingBtn;
+                MainSettingBtn.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Custom;
+                MainSettingBtn.ContextMenu.CustomPopupPlacementCallback = (popupSize, targetSize, offset) =>
+                {
+                    Point p = new Point(targetSize.Width - popupSize.Width, targetSize.Height + 3);
+                    return new System.Windows.Controls.Primitives.CustomPopupPlacement[]
+                    {
+                        new System.Windows.Controls.Primitives.CustomPopupPlacement(p, System.Windows.Controls.Primitives.PopupPrimaryAxis.Horizontal)
+                    };
+                };
                 MainSettingBtn.ContextMenu.IsOpen = true;
             }
         }
@@ -742,6 +752,103 @@ namespace GeekDesk
         private void MenuAbout_Click(object sender, RoutedEventArgs e)
         {
             ConfigWindow.Show(appData.AppConfig, this);
+        }
+
+        public void ApplyThemeStyle()
+        {
+            BGSettingUtil.BGSetting();
+            AccordionCard.InitDrawerLayout();
+
+            VisualTheme theme = appData?.AppConfig?.VisualTheme ?? VisualTheme.MacAcrylic;
+            switch (theme)
+            {
+                case VisualTheme.MacAcrylic:
+                    // 1. macOS 磨砂黑质感 (深色深空灰专业风)
+                    MainContentContainer.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#181B21"));
+                    TitleBarBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#21252E"));
+                    TitleBarBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#323946"));
+                    BottomToolbarBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#21252E"));
+                    BottomToolbarBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#323946"));
+
+                    Brush darkIconBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#D1D5DB"));
+                    if (StyleSwitchPath != null) StyleSwitchPath.Fill = darkIconBrush;
+                    if (SearchBtnPath != null) SearchBtnPath.Fill = darkIconBrush;
+                    if (SettingBtnPath != null) SettingBtnPath.Fill = darkIconBrush;
+                    if (QuickToolsPanel != null) System.Windows.Documents.TextElement.SetForeground(QuickToolsPanel, darkIconBrush);
+                    if (appData?.AppConfig != null) appData.AppConfig.TextColor = "#E5E7EB";
+                    break;
+
+                case VisualTheme.PureMinimal:
+                    // 2. 纯净极简纯白现代风 (极致纯白平铺，极细线条)
+                    MainContentContainer.Background = Brushes.White;
+                    TitleBarBorder.Background = Brushes.White;
+                    TitleBarBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E2E8F0"));
+                    BottomToolbarBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F8FAFC"));
+                    BottomToolbarBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E2E8F0"));
+
+                    Brush lightIconBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#334155"));
+                    if (StyleSwitchPath != null) StyleSwitchPath.Fill = lightIconBrush;
+                    if (SearchBtnPath != null) SearchBtnPath.Fill = lightIconBrush;
+                    if (SettingBtnPath != null) SettingBtnPath.Fill = lightIconBrush;
+                    if (QuickToolsPanel != null) System.Windows.Documents.TextElement.SetForeground(QuickToolsPanel, new SolidColorBrush((Color)ColorConverter.ConvertFromString("#64748B")));
+                    if (appData?.AppConfig != null) appData.AppConfig.TextColor = "#1E293B";
+                    break;
+
+                case VisualTheme.CrystalSkeuomorphic:
+                default:
+                    // 3. 经典音速金属微拟物风 (经典电镀银/拉丝双色渐变高光与复古象牙暖米色)
+                    MainContentContainer.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F5F3EC"));
+                    LinearGradientBrush titleBrush = new LinearGradientBrush
+                    {
+                        StartPoint = new Point(0, 0),
+                        EndPoint = new Point(0, 1)
+                    };
+                    titleBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#F2F5F8"), 0.0));
+                    titleBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#DEE5EC"), 0.5));
+                    titleBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#BFCBD7"), 0.51));
+                    titleBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#ABBAC9"), 1.0));
+                    TitleBarBorder.Background = titleBrush;
+                    TitleBarBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#7E8F9F"));
+                    BottomToolbarBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DCE3EA"));
+                    BottomToolbarBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ADBAC6"));
+
+                    Brush metalIconBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3B4654"));
+                    if (StyleSwitchPath != null) StyleSwitchPath.Fill = metalIconBrush;
+                    if (SearchBtnPath != null) SearchBtnPath.Fill = metalIconBrush;
+                    if (SettingBtnPath != null) SettingBtnPath.Fill = metalIconBrush;
+                    if (QuickToolsPanel != null) System.Windows.Documents.TextElement.SetForeground(QuickToolsPanel, metalIconBrush);
+                    if (appData?.AppConfig != null) appData.AppConfig.TextColor = "#1F2937";
+                    break;
+            }
+
+            if (XiaoQCard != null)
+            {
+                XiaoQCard.ApplyTheme(theme);
+            }
+        }
+
+        private void SwitchTheme_Mac(object sender, RoutedEventArgs e)
+        {
+            appData.AppConfig.VisualTheme = VisualTheme.MacAcrylic;
+            ApplyThemeStyle();
+            CommonCode.SaveAppData(appData, Constants.DATA_FILE_PATH);
+            HandyControl.Controls.Growl.SuccessGlobal("已切换至：macOS 磨砂质感风");
+        }
+
+        private void SwitchTheme_Minimal(object sender, RoutedEventArgs e)
+        {
+            appData.AppConfig.VisualTheme = VisualTheme.PureMinimal;
+            ApplyThemeStyle();
+            CommonCode.SaveAppData(appData, Constants.DATA_FILE_PATH);
+            HandyControl.Controls.Growl.SuccessGlobal("已切换至：纯净极简现代风");
+        }
+
+        private void SwitchTheme_Crystal(object sender, RoutedEventArgs e)
+        {
+            appData.AppConfig.VisualTheme = VisualTheme.CrystalSkeuomorphic;
+            ApplyThemeStyle();
+            CommonCode.SaveAppData(appData, Constants.DATA_FILE_PATH);
+            HandyControl.Controls.Growl.SuccessGlobal("已切换至：经典金属微拟物风");
         }
 
         private void ToggleLauncherStyle_Click(object sender, RoutedEventArgs e)
@@ -786,27 +893,34 @@ namespace GeekDesk
         }
 
         /// <summary>
-        /// 贴靠任务栏正上方并播放自下而上展开动画
+        /// 贴靠任务栏正上方并播放自下而上展开动画 (自动感知多屏与 DPI 缩放)
         /// </summary>
         public void PositionOverTaskbar()
         {
             try
             {
-                Rect workArea = SystemParameters.WorkArea;
-                double screenHeight = SystemParameters.PrimaryScreenHeight;
-                double screenWidth = SystemParameters.PrimaryScreenWidth;
+                System.Drawing.Point mousePt = System.Windows.Forms.Cursor.Position;
+                System.Windows.Forms.Screen screen = System.Windows.Forms.Screen.FromPoint(mousePt);
+                if (screen == null) screen = System.Windows.Forms.Screen.PrimaryScreen;
 
-                // 默认贴在屏幕底部任务栏正上方
-                double targetLeft = (screenWidth - this.Width) / 2;
-                double targetTop = workArea.Bottom - this.Height;
+                double dpiScale = ScreenUtil.GetScreenScalingFactor();
+                if (dpiScale <= 0) dpiScale = 1.0;
+
+                double workLeft = screen.WorkingArea.Left / dpiScale;
+                double workTop = screen.WorkingArea.Top / dpiScale;
+                double workWidth = screen.WorkingArea.Width / dpiScale;
+                double workHeight = screen.WorkingArea.Height / dpiScale;
+                double workBottom = workTop + workHeight;
+
+                double targetLeft = workLeft + (workWidth - this.Width) / 2;
+                double targetTop = workBottom - this.Height;
 
                 this.Left = targetLeft;
                 this.Top = targetTop;
 
-                // 自下而上平滑滑入动画
                 DoubleAnimation slideAnim = new DoubleAnimation
                 {
-                    From = workArea.Bottom,
+                    From = workBottom,
                     To = targetTop,
                     Duration = TimeSpan.FromMilliseconds(180),
                     EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
@@ -825,7 +939,7 @@ namespace GeekDesk
             if (isPinned)
             {
                 MarginHide.StopHide();
-                HandyControl.Controls.Growl.Success("已开启置顶并固定窗口", "MainWindowGrowl");
+                HandyControl.Controls.Growl.SuccessGlobal("已开启置顶并固定窗口");
             }
             else
             {
@@ -833,7 +947,7 @@ namespace GeekDesk
                 {
                     MarginHide.StartHide();
                 }
-                HandyControl.Controls.Growl.Info("已解除置顶与固定", "MainWindowGrowl");
+                HandyControl.Controls.Growl.InfoGlobal("已解除置顶与固定");
             }
         }
 

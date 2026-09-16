@@ -235,11 +235,11 @@ namespace GeekDesk.Control.Other
             HintGrid.Visibility = Visibility.Collapsed;
             if (tempType == PasswordType.ALTER)
             {
-                HandyControl.Controls.Growl.Success("密码修改成功!", "MainWindowGrowl");
+                HandyControl.Controls.Growl.SuccessGlobal("密码修改成功!");
             } else
             {
                 menuInfo.IsEncrypt = true;
-                HandyControl.Controls.Growl.Success(menuInfo.MenuName + " 已加密!", "MainWindowGrowl");
+                HandyControl.Controls.Growl.SuccessGlobal(menuInfo.MenuName + " 已加密!");
             }
 
         }

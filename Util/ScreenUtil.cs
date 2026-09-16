@@ -129,27 +129,34 @@ namespace GeekDesk.Util
         public const int DESKTOPVERTRES = 117;
         public const int DESKTOPHORZRES = 118;
         /// <summary>
-        /// 获取屏幕缩放比例
+        /// 获取屏幕缩放比例 (基于系统 DPI，100% = 1.0, 125% = 1.25, 150% = 1.5)
         /// </summary>
         /// <returns></returns>
         public static double GetScreenScalingFactor()
         {
             try
             {
-                var g = Graphics.FromHwnd(IntPtr.Zero);
-                IntPtr desktop = g.GetHdc();
-                var physicalScreenHeight = GetDeviceCaps(desktop, (int)DESKTOPVERTRES);
-
-                var screenScalingFactor =
-                    (double)physicalScreenHeight / SystemParameters.PrimaryScreenHeight;
-                //SystemParameters.PrimaryScreenHeight;
-
-                return screenScalingFactor;
-            } catch (Exception e)
-            {
-                return 1;
+                using (var g = Graphics.FromHwnd(IntPtr.Zero))
+                {
+                    IntPtr desktop = g.GetHdc();
+                    try
+                    {
+                        int dpiY = GetDeviceCaps(desktop, 90); // LOGPIXELSY = 90
+                        if (dpiY > 0)
+                        {
+                            return dpiY / 96.0;
+                        }
+                    }
+                    finally
+                    {
+                        g.ReleaseHdc(desktop);
+                    }
+                }
             }
-            
+            catch
+            {
+            }
+            return 1.0;
         }
 
     }

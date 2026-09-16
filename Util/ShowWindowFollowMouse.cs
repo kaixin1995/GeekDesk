@@ -68,9 +68,9 @@ namespace GeekDesk.Util
             if (targetTop + windowHeight / dpiY > workingArea.Bottom / dpiY)
                 targetTop = workingArea.Bottom / dpiY - windowHeight / dpiY;
 
-            // Update window position
-            window.Left = targetLeft * dpiX;
-            window.Top = targetTop * dpiY;
+            // Update window position (WPF uses DIPs, directly set logical coordinates)
+            window.Left = targetLeft;
+            window.Top = targetTop;
         }
 
         private static float GetDpi(bool isX)

@@ -131,11 +131,10 @@
                     <CheckBox Style="{StaticResource MyCheckBoxStyle}" x:Name="ShowBox" Visibility="Hidden" Panel.ZIndex="2"/>
                     <CheckBox Style="{StaticResource MyCheckBoxStyle}" x:Name="HideBox" Visibility="Hidden" Panel.ZIndex="2"/>
 
-                    <StackPanel HorizontalAlignment="Right" Panel.ZIndex="99" hc:Growl.GrowlParent="False" hc:Growl.Token="MainWindowGrowl" Grid.Row="1"/>
                     <StackPanel HorizontalAlignment="Center" Panel.ZIndex="99" hc:Growl.GrowlParent="False" hc:Growl.Token="MainWindowAskGrowl" Grid.Row="1"/>
 
                     <!-- 标题栏与常用操作 (紧凑精致) -->
-                    <Border Grid.Row="0" CornerRadius="5,5,0,0" BorderThickness="0,0,0,1" BorderBrush="#9EACB9" MouseDown="DragMove">
+                    <Border Grid.Row="0" CornerRadius="5,5,0,0" BorderThickness="0,0,0,1" BorderBrush="#9EACB9" MouseDown="DragMove" x:Name="TitleBarBorder">
                         <Border.Background>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                                 <GradientStop Color="#ECEFF2" Offset="0.0"/>
@@ -179,24 +178,29 @@
                             <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
                                 <!-- 风格切换按钮 (音速启动抽屉 / 小Q书桌模式) -->
                                 <Button Background="Transparent" BorderThickness="0" Padding="3" Margin="0,0,3,0" FocusVisualStyle="{x:Null}" ToolTip="切换启动器风格 (音速启动 / 小Q书桌)" Click="ToggleLauncherStyle_Click" x:Name="StyleSwitchBtn">
-                                    <Path Data="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"
+                                    <Path x:Name="StyleSwitchPath" Data="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"
                                           Fill="#4B5563" Width="13" Height="13" Stretch="Uniform"/>
                                 </Button>
 
                                 <!-- 独立的搜索按钮 -->
                                 <Button Background="Transparent" BorderThickness="0" Padding="3" Margin="0,0,3,0" FocusVisualStyle="{x:Null}" ToolTip="快速搜索图标" Click="ToggleSearchBoxClick">
-                                    <Path Data="M416 128C256.96 128 128 256.96 128 416s128.96 288 288 288 288-128.96 288-288S607.04 128 416 128z m0 512c-123.712 0-224-100.288-224-224S292.288 192 416 192s224 100.288 224 224-100.288 224-224 224z m441.376 307.2l-176.64-176.64a32 32 0 0 0-45.248 45.248l176.64 176.64a32 32 0 0 0 45.248-45.248z"
+                                    <Path x:Name="SearchBtnPath" Data="M416 128C256.96 128 128 256.96 128 416s128.96 288 288 288 288-128.96 288-288S607.04 128 416 128z m0 512c-123.712 0-224-100.288-224-224S292.288 192 416 192s224 100.288 224 224-100.288 224-224 224z m441.376 307.2l-176.64-176.64a32 32 0 0 0-45.248 45.248l176.64 176.64a32 32 0 0 0 45.248-45.248z"
                                           Fill="#4B5563" Width="13" Height="13" Stretch="Uniform"/>
                                 </Button>
 
                                 <!-- 设置齿轮按钮 -->
                                 <Button Background="Transparent" BorderThickness="0" Padding="3" FocusVisualStyle="{x:Null}" ToolTip="设置与选项" Click="SettingButton_Click" x:Name="MainSettingBtn">
-                                    <Path Data="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"
+                                    <Path x:Name="SettingBtnPath" Data="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"
                                           Fill="#4B5563" Width="14" Height="14" Stretch="Uniform"/>
                                     <Button.ContextMenu>
-                                        <ContextMenu x:Name="GearContextMenu" Width="140">
+                                        <ContextMenu x:Name="GearContextMenu" Width="170">
                                             <MenuItem Header="窗口置顶/固定" Click="ToggleTopmostClick" x:Name="PinMenuItem"/>
                                             <Separator/>
+                                            <MenuItem Header="外观风格">
+                                                <MenuItem Header="macOS 磨砂质感" Click="SwitchTheme_Mac" Tag="MacAcrylic"/>
+                                                <MenuItem Header="纯净极简现代" Click="SwitchTheme_Minimal" Tag="PureMinimal"/>
+                                                <MenuItem Header="经典金属微拟物" Click="SwitchTheme_Crystal" Tag="CrystalSkeuomorphic"/>
+                                            </MenuItem>
                                             <MenuItem Header="高级设置" Click="ConfigButtonClick"/>
                                             <MenuItem Header="关于" Click="MenuAbout_Click"/>
                                         </ContextMenu>
@@ -216,7 +220,7 @@
                     </Border>
 
                     <!-- 第 2 行：主体内容层叠区 (手风琴抽屉 / 小Q书桌卡片 / 悬浮搜索栏 / 搜索结果) -->
-                    <Grid Grid.Row="1" Background="#FFFFFF">
+                    <Grid Grid.Row="1" x:Name="MainContentContainer">
                         <!-- 1. 音速启动居中手风琴抽屉面板 -->
                         <uc:AccordionCardControl x:Name="AccordionCard" Visibility="Collapsed"/>
 
@@ -297,9 +301,9 @@
                     </hc:NotifyIcon>
 
                     <!-- 第 3 行：音速启动风格底部常用工具栏 -->
-                    <Border Grid.Row="2" Background="#F1F3F5" BorderBrush="#D1D5DB" BorderThickness="0,1,0,0">
+                    <Border Grid.Row="2" Background="#F1F3F5" BorderBrush="#D1D5DB" BorderThickness="0,1,0,0" x:Name="BottomToolbarBorder">
                         <DockPanel LastChildFill="True" VerticalAlignment="Center" Margin="4,0,4,0">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" x:Name="QuickToolsPanel">
                                 <Button ToolTip="任务管理器" Click="QuickTool_TaskManager" Background="Transparent" BorderThickness="0" Padding="3,1" FocusVisualStyle="{x:Null}">
                                     <hc:IconElement.Geometry>
                                         M128 640h128l96-256 128 384 128-256 96 128h192v64H688l-80-106.666667-128 256-128-384-80 213.333334H128z
@@ -324,7 +328,7 @@
                         </DockPanel>
                     </Border>
 
-                    <StackPanel hc:Growl.GrowlParent="True" VerticalAlignment="Top" Margin="0,10,10,0"/>
+
                 </Grid>
             </hc:DialogContainer>
         </Border>

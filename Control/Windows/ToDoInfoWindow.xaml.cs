@@ -87,7 +87,7 @@ namespace GeekDesk.Control.Windows
             TodoTaskExecType execType;
             if (TodoTitle.Text.Trim() == "")
             {
-                Growl.Warning("任务标题不能为空!");
+                Growl.WarningGlobal("任务标题不能为空!");
                 return;
             }
             else
@@ -97,7 +97,7 @@ namespace GeekDesk.Control.Windows
                     execType = TodoTaskExecType.SET_TIME;
                     if (ExeTime.Text.Trim() == "")
                     {
-                        Growl.Warning("执行时间不能为空!");
+                        Growl.WarningGlobal("执行时间不能为空!");
                         return;
                     }
                     try
@@ -106,7 +106,7 @@ namespace GeekDesk.Control.Windows
                     }
                     catch (Exception)
                     {
-                        Growl.Warning("请输入正确的时间!");
+                        Growl.WarningGlobal("请输入正确的时间!");
                         return;
                     }
                     execTime = ExeTime.Text;
@@ -116,7 +116,7 @@ namespace GeekDesk.Control.Windows
                     execType = TodoTaskExecType.CRON;
                     if (Cron.Text.Trim() == "")
                     {
-                        Growl.Warning("Cron表达式不能为空!");
+                        Growl.WarningGlobal("Cron表达式不能为空!");
                         return;
                     }
                     try
@@ -126,7 +126,7 @@ namespace GeekDesk.Control.Windows
                     }
                     catch (Exception)
                     {
-                        Growl.Warning("请输入正确的Cron表达式!");
+                        Growl.WarningGlobal("请输入正确的Cron表达式!");
                         return;
                     }
                     CronExpression exp = new CronExpression(Cron.Text);

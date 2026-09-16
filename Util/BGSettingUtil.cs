@@ -11,22 +11,13 @@ namespace GeekDesk.Util
     public class BGSettingUtil
     {
         private static readonly AppConfig appConfig = MainWindow.appData.AppConfig;
-
         public static void BGSetting()
         {
+            if (MainWindow.mainWindow == null || MainWindow.mainWindow.BGBorder == null) return;
+
             if (appConfig.BitmapImage == null && appConfig.GradientBGParam == null)
             {
-                // 音速启动 (Sonic Launcher) 经典金属银灰质感渐变背景
-                LinearGradientBrush sonicBrush = new LinearGradientBrush
-                {
-                    StartPoint = new Point(0, 0),
-                    EndPoint = new Point(0, 1)
-                };
-                sonicBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#DDE2E8"), 0.0));
-                sonicBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#BAC3CE"), 0.08));
-                sonicBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#FFFFFF"), 0.081));
-                sonicBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#F8F9FA"), 1.0));
-                MainWindow.mainWindow.BGBorder.Background = sonicBrush;
+                ApplyThemeBackground();
                 return;
             }
 
@@ -59,16 +50,7 @@ namespace GeekDesk.Util
                 }
                 else
                 {
-                    LinearGradientBrush sonicBrush = new LinearGradientBrush
-                    {
-                        StartPoint = new Point(0, 0),
-                        EndPoint = new Point(0, 1)
-                    };
-                    sonicBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#DDE2E8"), 0.0));
-                    sonicBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#BAC3CE"), 0.08));
-                    sonicBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#FFFFFF"), 0.081));
-                    sonicBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#F8F9FA"), 1.0));
-                    MainWindow.mainWindow.BGBorder.Background = sonicBrush;
+                    ApplyThemeBackground();
                 }
             }
             else
@@ -90,6 +72,49 @@ namespace GeekDesk.Util
                 lgb.GradientStops.Add(gs2);
                 lgb.Opacity = (double)(Math.Round((decimal)(appConfig.BgOpacity / 100.00), 2));
                 MainWindow.mainWindow.BGBorder.Background = lgb;
+            }
+        }
+
+        public static void ApplyThemeBackground()
+        {
+            if (MainWindow.mainWindow?.BGBorder == null) return;
+
+            switch (appConfig.VisualTheme)
+            {
+                case VisualTheme.MacAcrylic:
+                    // 1. macOS 磨砂黑质感 (深色深空灰专业风)
+                    LinearGradientBrush darkBrush = new LinearGradientBrush
+                    {
+                        StartPoint = new Point(0, 0),
+                        EndPoint = new Point(0, 1)
+                    };
+                    darkBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#232832"), 0.0));
+                    darkBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#181B21"), 1.0));
+                    MainWindow.mainWindow.BGBorder.Background = darkBrush;
+                    MainWindow.mainWindow.BGBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3E4756"));
+                    break;
+
+                case VisualTheme.PureMinimal:
+                    // 2. 纯净极简纯白现代风
+                    MainWindow.mainWindow.BGBorder.Background = Brushes.White;
+                    MainWindow.mainWindow.BGBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#CBD5E1"));
+                    break;
+
+                case VisualTheme.CrystalSkeuomorphic:
+                default:
+                    // 3. 经典音速金属微拟物风 (经典银灰拉丝高光质感)
+                    LinearGradientBrush crystalBrush = new LinearGradientBrush
+                    {
+                        StartPoint = new Point(0, 0),
+                        EndPoint = new Point(0, 1)
+                    };
+                    crystalBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#F5F7FA"), 0.0));
+                    crystalBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#D5DEE7"), 0.08));
+                    crystalBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#E2E8EE"), 0.081));
+                    crystalBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#CAD4DF"), 1.0));
+                    MainWindow.mainWindow.BGBorder.Background = crystalBrush;
+                    MainWindow.mainWindow.BGBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#8495A5"));
+                    break;
             }
         }
     }

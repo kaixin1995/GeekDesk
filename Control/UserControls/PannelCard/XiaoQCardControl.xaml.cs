@@ -10,6 +10,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace GeekDesk.Control.UserControls.PannelCard
 {
@@ -41,6 +42,56 @@ namespace GeekDesk.Control.UserControls.PannelCard
             IconGridListBox.ItemsSource = menu.IconList;
             appData.AppConfig.SelectedMenuIcons = menu.IconList;
             appData.AppConfig.SelectedMenuIndex = appData.MenuList.IndexOf(menu);
+        }
+
+        public void ApplyTheme(VisualTheme theme)
+        {
+            switch (theme)
+            {
+                case VisualTheme.MacAcrylic:
+                    // 1. macOS 磨砂黑 (深色专业深空灰)
+                    NavBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E222A"));
+                    NavBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2D3440"));
+                    RightIconsBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#181B21"));
+                    BottomAddBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#252B35"));
+                    BottomAddBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2D3440"));
+
+                    SetThemeBrushes("#0A84FF", "#2E3644", "#D1D5DB", "#FFFFFF", "#E2E8F0", "#9CA3AF");
+                    break;
+
+                case VisualTheme.PureMinimal:
+                    // 2. 纯净极简纯白现代风
+                    NavBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F8FAFC"));
+                    NavBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E2E8F0"));
+                    RightIconsBorder.Background = Brushes.White;
+                    BottomAddBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F1F5F9"));
+                    BottomAddBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E2E8F0"));
+
+                    SetThemeBrushes("#0F172A", "#E2E8F0", "#334155", "#FFFFFF", "#1E293B", "#64748B");
+                    break;
+
+                case VisualTheme.CrystalSkeuomorphic:
+                default:
+                    // 3. 经典音速金属微拟物风 (经典象牙米白与商务海军蓝)
+                    NavBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E4EAEF"));
+                    NavBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#B8C5D0"));
+                    RightIconsBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FAF9F5"));
+                    BottomAddBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#D6DFE7"));
+                    BottomAddBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#B8C5D0"));
+
+                    SetThemeBrushes("#2B579A", "#CBD8E2", "#2D3748", "#FFFFFF", "#1A202C", "#475569");
+                    break;
+            }
+        }
+
+        private void SetThemeBrushes(string selectedNav, string hoverNav, string navText, string navSelectedText, string iconText, string addText)
+        {
+            this.Resources["NavItemSelectedBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(selectedNav));
+            this.Resources["NavItemHoverBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(hoverNav));
+            this.Resources["NavTextBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(navText));
+            this.Resources["NavSelectedTextBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(navSelectedText));
+            this.Resources["IconTextBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(iconText));
+            this.Resources["AddMenuTextBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(addText));
         }
 
         private void CategoryListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -109,7 +160,7 @@ namespace GeekDesk.Control.UserControls.PannelCard
             {
                 if (appData.MenuList.Count <= 1)
                 {
-                    HandyControl.Controls.Growl.Warning("至少保留一个分类!", "MainWindowGrowl");
+                    HandyControl.Controls.Growl.WarningGlobal("至少保留一个分类!");
                     return;
                 }
                 int oldIndex = appData.MenuList.IndexOf(menu);

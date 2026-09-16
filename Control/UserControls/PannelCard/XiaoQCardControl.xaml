@@ -12,6 +12,14 @@
     <UserControl.Resources>
         <cvt:Boolean2VisibilityConverter x:Key="BoolToVisibilityConverter"/>
 
+        <!-- 分类导航与图标区动态主题配色 -->
+        <SolidColorBrush x:Key="NavItemSelectedBrush" Color="#374151"/>
+        <SolidColorBrush x:Key="NavItemHoverBrush" Color="#E5E7EB"/>
+        <SolidColorBrush x:Key="NavTextBrush" Color="#1F2937"/>
+        <SolidColorBrush x:Key="NavSelectedTextBrush" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="IconTextBrush" Color="#1F2937"/>
+        <SolidColorBrush x:Key="AddMenuTextBrush" Color="#4B5563"/>
+
         <Style x:Key="XiaoQIconImageStyle" TargetType="Image">
             <Setter Property="Width" Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=DataContext.AppConfig.ImageWidth, Mode=OneWay}"/>
             <Setter Property="Height" Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=DataContext.AppConfig.ImageHeight, Mode=OneWay}"/>
@@ -50,14 +58,14 @@
         </Grid.ColumnDefinitions>
 
         <!-- ================== 左侧垂直分类导航 ================== -->
-        <Border Grid.Column="0" Background="#F1F3F5" BorderBrush="#E5E7EB" BorderThickness="0,0,1,0">
+        <Border Grid.Column="0" Background="#F1F3F5" BorderBrush="#E5E7EB" BorderThickness="0,0,1,0" x:Name="NavBorder">
             <DockPanel LastChildFill="True">
                 <!-- 底部添加分类快捷条 -->
                 <Border DockPanel.Dock="Bottom" Height="36" BorderBrush="#E5E7EB" BorderThickness="0,1,0,0" Background="#ECEFF2"
-                        Cursor="Hand" MouseLeftButtonDown="CreateMenu_Click" ToolTip="新建分类">
+                        Cursor="Hand" MouseLeftButtonDown="CreateMenu_Click" ToolTip="新建分类" x:Name="BottomAddBorder">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <Path Data="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" Fill="#6B7280" Width="12" Height="12" Stretch="Uniform" Margin="0,0,4,0"/>
-                        <TextBlock Text="新建分类" FontSize="12" Foreground="#4B5563" VerticalAlignment="Center"/>
+                        <Path Data="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" Fill="{DynamicResource AddMenuTextBrush}" Width="12" Height="12" Stretch="Uniform" Margin="0,0,4,0"/>
+                        <TextBlock Text="新建分类" FontSize="12" Foreground="{DynamicResource AddMenuTextBrush}" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Border>
 
@@ -83,14 +91,14 @@
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsSelected" Value="True">
-                                                    <Setter TargetName="ItemBorder" Property="Background" Value="#374151"/>
+                                                    <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource NavItemSelectedBrush}"/>
                                                 </Trigger>
                                                 <MultiTrigger>
                                                     <MultiTrigger.Conditions>
                                                         <Condition Property="IsMouseOver" Value="True"/>
                                                         <Condition Property="IsSelected" Value="False"/>
                                                     </MultiTrigger.Conditions>
-                                                    <Setter TargetName="ItemBorder" Property="Background" Value="#E5E7EB"/>
+                                                    <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource NavItemHoverBrush}"/>
                                                 </MultiTrigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
@@ -120,10 +128,10 @@
                                                Visibility="{Binding NotMenuEdit}">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
-                                                <Setter Property="Foreground" Value="#1F2937"/>
+                                                <Setter Property="Foreground" Value="{DynamicResource NavTextBrush}"/>
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
-                                                        <Setter Property="Foreground" Value="#FFFFFF"/>
+                                                        <Setter Property="Foreground" Value="{DynamicResource NavSelectedTextBrush}"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
@@ -186,7 +194,7 @@
                                            TextWrapping="NoWrap"
                                            TextTrimming="CharacterEllipsis"
                                            TextAlignment="Center"
-                                           Foreground="#1F2937"
+                                           Foreground="{DynamicResource IconTextBrush}"
                                            Visibility="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=DataContext.AppConfig.ShowIconTitle, Converter={StaticResource BoolToVisibilityConverter}}"/>
                             </hc:SimpleStackPanel>
                         </DataTemplate>

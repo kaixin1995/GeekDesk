@@ -285,7 +285,7 @@ namespace GeekDesk.Control.UserControls.PannelCard
                     object obj = MenuListBox.ItemContainerGenerator.ContainerFromIndex(MenuListBox.SelectedIndex);
                     SetListBoxItemEvent((ListBoxItem)obj);
                     Lbi_Selected(obj, null);
-                    HandyControl.Controls.Growl.Success("菜单关联成功, 加载列表中, 稍后重新进入此菜单可查看列表!", "MainWindowGrowl");
+                    HandyControl.Controls.Growl.SuccessGlobal("菜单关联成功, 加载列表中, 稍后重新进入此菜单可查看列表!");
                     FileWatcher.LinkMenuWatcher(menuInfo);
 
                     new Thread(() =>
@@ -700,7 +700,7 @@ namespace GeekDesk.Control.UserControls.PannelCard
                 else
                 {
                     menuInfo.IsEncrypt = true;
-                    HandyControl.Controls.Growl.Success(menuInfo.MenuName + " 已加密!", "MainWindowGrowl");
+                    HandyControl.Controls.Growl.SuccessGlobal(menuInfo.MenuName + " 已加密!");
                 }
             }
         }

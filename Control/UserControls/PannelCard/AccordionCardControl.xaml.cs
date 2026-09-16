@@ -103,58 +103,108 @@ namespace GeekDesk.Control.UserControls.PannelCard
 
         private FrameworkElement CreateDrawerHeader(MenuInfo menu)
         {
-            // 音速启动 (Sonic Launcher) 经典风格抽屉栏：浅灰/纯白水晶高光按钮，上下细边框，黑色清晰居中文字
             Border headerBorder = new Border
             {
-                Height = 30,
-                Margin = new Thickness(0, 1, 0, 1),
-                CornerRadius = new CornerRadius(0),
+                Height = 32,
                 Cursor = Cursors.Hand,
                 Tag = menu,
                 ContextMenu = (ContextMenu)this.Resources["CategoryContextMenu"],
                 AllowDrop = true
             };
 
-            LinearGradientBrush normalBrush = new LinearGradientBrush
+            // 居中分类文字
+            TextBlock nameBlock = new TextBlock
             {
-                StartPoint = new Point(0, 0),
-                EndPoint = new Point(0, 1)
+                FontSize = 13,
+                FontWeight = FontWeights.Normal,
+                TextAlignment = TextAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#222222"))
             };
-            normalBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#FFFFFF"), 0.0));
-            normalBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#F1F3F5"), 0.5));
-            normalBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#E4E7EB"), 1.0));
-
-            LinearGradientBrush expandedBrush = new LinearGradientBrush
-            {
-                StartPoint = new Point(0, 0),
-                EndPoint = new Point(0, 1)
-            };
-            expandedBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#EBF3FC"), 0.0));
-            expandedBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#D0E4F9"), 0.5));
-            expandedBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#B9D7F6"), 1.0));
-
-            LinearGradientBrush hoverBrush = new LinearGradientBrush
-            {
-                StartPoint = new Point(0, 0),
-                EndPoint = new Point(0, 1)
-            };
-            hoverBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#F7FAFE"), 0.0));
-            hoverBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#E6F0FC"), 0.5));
-            hoverBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#D5E5F9"), 1.0));
+            nameBlock.SetBinding(TextBlock.TextProperty, new Binding("MenuName") { Source = menu });
+            nameBlock.SetBinding(UIElement.VisibilityProperty, new Binding("NotMenuEdit") { Source = menu });
 
             Action updateHeaderStyle = () =>
             {
-                if (menu.IsExpanded)
+                VisualTheme currentTheme = appData?.AppConfig?.VisualTheme ?? VisualTheme.MacAcrylic;
+
+                switch (currentTheme)
                 {
-                    headerBorder.Background = expandedBrush;
-                    headerBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#7DA2CE"));
-                    headerBorder.BorderThickness = new Thickness(0, 1, 0, 1);
-                }
-                else
-                {
-                    headerBorder.Background = normalBrush;
-                    headerBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#CCD2D9"));
-                    headerBorder.BorderThickness = new Thickness(0, 1, 0, 1);
+                    case VisualTheme.MacAcrylic:
+                        // 暗黑深空灰磨砂: 苹果蓝高光胶囊
+                        headerBorder.Margin = new Thickness(6, 3, 6, 3);
+                        headerBorder.CornerRadius = new CornerRadius(7);
+                        if (menu.IsExpanded)
+                        {
+                            headerBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#0A84FF"));
+                            headerBorder.BorderThickness = new Thickness(0);
+                            nameBlock.Foreground = Brushes.White;
+                        }
+                        else
+                        {
+                            headerBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#232832"));
+                            headerBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#323946"));
+                            headerBorder.BorderThickness = new Thickness(1);
+                            nameBlock.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#D1D5DB"));
+                        }
+                        break;
+
+                    case VisualTheme.PureMinimal:
+                        // 纯净极简现代白: 极简纯黑胶囊
+                        headerBorder.Margin = new Thickness(4, 2, 4, 2);
+                        headerBorder.CornerRadius = new CornerRadius(4);
+                        if (menu.IsExpanded)
+                        {
+                            headerBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#0F172A"));
+                            headerBorder.BorderThickness = new Thickness(0);
+                            nameBlock.Foreground = Brushes.White;
+                        }
+                        else
+                        {
+                            headerBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F1F5F9"));
+                            headerBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E2E8F0"));
+                            headerBorder.BorderThickness = new Thickness(1);
+                            nameBlock.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#334155"));
+                        }
+                        break;
+
+                    case VisualTheme.CrystalSkeuomorphic:
+                    default:
+                        // 经典音速拟物: 经典海军蓝立体渐变
+                        headerBorder.Margin = new Thickness(0, 1, 0, 1);
+                        headerBorder.CornerRadius = new CornerRadius(0);
+                        if (menu.IsExpanded)
+                        {
+                            LinearGradientBrush expandedBrush = new LinearGradientBrush
+                            {
+                                StartPoint = new Point(0, 0),
+                                EndPoint = new Point(0, 1)
+                            };
+                            expandedBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#3B6EAF"), 0.0));
+                            expandedBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#264E86"), 0.5));
+                            expandedBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#1B3C6B"), 1.0));
+                            headerBorder.Background = expandedBrush;
+                            headerBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#152F54"));
+                            headerBorder.BorderThickness = new Thickness(0, 1, 0, 1);
+                            nameBlock.Foreground = Brushes.White;
+                        }
+                        else
+                        {
+                            LinearGradientBrush normalBrush = new LinearGradientBrush
+                            {
+                                StartPoint = new Point(0, 0),
+                                EndPoint = new Point(0, 1)
+                            };
+                            normalBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#FFFFFF"), 0.0));
+                            normalBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#F0F3F6"), 0.5));
+                            normalBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#DEE3E8"), 1.0));
+                            headerBorder.Background = normalBrush;
+                            headerBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#B9C3CD"));
+                            headerBorder.BorderThickness = new Thickness(0, 1, 0, 1);
+                            nameBlock.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#222222"));
+                        }
+                        break;
                 }
             };
             updateHeaderStyle();
@@ -163,8 +213,24 @@ namespace GeekDesk.Control.UserControls.PannelCard
             {
                 if (!menu.IsExpanded)
                 {
-                    headerBorder.Background = hoverBrush;
-                    headerBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#99BBE8"));
+                    VisualTheme currentTheme = appData?.AppConfig?.VisualTheme ?? VisualTheme.MacAcrylic;
+                    if (currentTheme == VisualTheme.CrystalSkeuomorphic)
+                    {
+                        LinearGradientBrush hoverBrush = new LinearGradientBrush
+                        {
+                            StartPoint = new Point(0, 0),
+                            EndPoint = new Point(0, 1)
+                        };
+                        hoverBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#F7FAFE"), 0.0));
+                        hoverBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#E6F0FC"), 0.5));
+                        hoverBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#D5E5F9"), 1.0));
+                        headerBorder.Background = hoverBrush;
+                        headerBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#99BBE8"));
+                    }
+                    else
+                    {
+                        headerBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#D4D4D8"));
+                    }
                 }
             };
             headerBorder.MouseLeave += (s, e) =>
@@ -202,19 +268,6 @@ namespace GeekDesk.Control.UserControls.PannelCard
             editBox.LostFocus += MenuRename_LostFocus;
             editBox.KeyDown += MenuRename_KeyDown;
 
-            // 居中分类文字 (经典黑字清晰显示)
-            TextBlock nameBlock = new TextBlock
-            {
-                FontSize = 13,
-                FontWeight = FontWeights.Normal,
-                TextAlignment = TextAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
-                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#222222"))
-            };
-            nameBlock.SetBinding(TextBlock.TextProperty, new Binding("MenuName") { Source = menu });
-            nameBlock.SetBinding(UIElement.VisibilityProperty, new Binding("NotMenuEdit") { Source = menu });
-
             menu.PropertyChanged += (s, e) =>
             {
                 if (e.PropertyName == "IsExpanded")
@@ -235,16 +288,42 @@ namespace GeekDesk.Control.UserControls.PannelCard
 
         private FrameworkElement CreateDrawerContent(MenuInfo menu, RowDefinition rowDef)
         {
-            // 音速启动图标容器面板：纯白背景
             Border contentBorder = new Border
             {
-                Padding = new Thickness(2, 4, 2, 4),
-                Margin = new Thickness(0),
-                Background = Brushes.White,
-                BorderThickness = new Thickness(0),
+                Padding = new Thickness(4, 6, 4, 6),
                 AllowDrop = true,
                 Tag = menu
             };
+
+            Action updateContentStyle = () =>
+            {
+                VisualTheme currentTheme = appData?.AppConfig?.VisualTheme ?? VisualTheme.MacAcrylic;
+                switch (currentTheme)
+                {
+                    case VisualTheme.MacAcrylic:
+                        contentBorder.Margin = new Thickness(6, 0, 6, 4);
+                        contentBorder.CornerRadius = new CornerRadius(8);
+                        contentBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#181B21"));
+                        contentBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2D3441"));
+                        contentBorder.BorderThickness = new Thickness(1);
+                        break;
+                    case VisualTheme.PureMinimal:
+                        contentBorder.Margin = new Thickness(4, 0, 4, 2);
+                        contentBorder.CornerRadius = new CornerRadius(4);
+                        contentBorder.Background = Brushes.White;
+                        contentBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E2E8F0"));
+                        contentBorder.BorderThickness = new Thickness(1);
+                        break;
+                    case VisualTheme.CrystalSkeuomorphic:
+                    default:
+                        contentBorder.Margin = new Thickness(0);
+                        contentBorder.CornerRadius = new CornerRadius(0);
+                        contentBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FAF9F5"));
+                        contentBorder.BorderThickness = new Thickness(0);
+                        break;
+                }
+            };
+            updateContentStyle();
 
             // 根据 IsExpanded 动态设置内容显隐和高度
             Action updateVisibility = () =>
@@ -494,7 +573,7 @@ namespace GeekDesk.Control.UserControls.PannelCard
             {
                 if (appData.MenuList.Count <= 1)
                 {
-                    HandyControl.Controls.Growl.Warning("至少保留一个分类!", "MainWindowGrowl");
+                    HandyControl.Controls.Growl.WarningGlobal("至少保留一个分类!");
                     return;
                 }
                 appData.MenuList.Remove(menu);

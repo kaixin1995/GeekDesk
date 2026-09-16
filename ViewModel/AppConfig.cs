@@ -107,6 +107,17 @@ namespace GeekDesk.ViewModel
 
         private bool? alwaysTopmost = true; //默认置顶
         private LauncherStyle launcherStyle = LauncherStyle.XiaoQDesk; //启动器风格 (默认支持小Q书桌模式)
+        private VisualTheme visualTheme = VisualTheme.MacAcrylic; //视觉主题 (默认苹果磨砂灰)
+
+        public VisualTheme VisualTheme
+        {
+            get => visualTheme;
+            set
+            {
+                visualTheme = value;
+                OnPropertyChanged("VisualTheme");
+            }
+        }
 
         public LauncherStyle LauncherStyle
         {

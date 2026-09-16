@@ -24,19 +24,23 @@ namespace GeekDesk.Constant
             {
                 try
                 {
-                    var assembly = System.Reflection.Assembly.GetExecutingAssembly();
-                    var fvi = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location);
-                    if (!string.IsNullOrEmpty(fvi.FileVersion))
+                    string exePath = Environment.ProcessPath;
+                    if (!string.IsNullOrEmpty(exePath) && System.IO.File.Exists(exePath))
                     {
-                        return fvi.FileVersion;
+                        var fvi = System.Diagnostics.FileVersionInfo.GetVersionInfo(exePath);
+                        if (!string.IsNullOrEmpty(fvi.FileVersion))
+                        {
+                            return fvi.FileVersion;
+                        }
                     }
+                    var assembly = System.Reflection.Assembly.GetExecutingAssembly();
                     if (assembly.GetName().Version != null)
                     {
                         return assembly.GetName().Version.ToString();
                     }
                 }
                 catch { }
-                return "1.0.0.1";
+                return "1.0.0.2";
             }
         }
 

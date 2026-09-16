@@ -382,20 +382,12 @@ namespace GeekDesk.Util
 				// not previously in the ListBox, then insert the item.
 				if( oldIndex > -1 )
                 {
-					// Íâ²¿ÒµÎñ´úÂë
+					// ï¿½â²¿Òµï¿½ï¿½ï¿½ï¿½ï¿½
 					itemsSource.Move(oldIndex, newIndex);
 					if (MainWindow.appData.AppConfig.IconSortType != SortType.CUSTOM)
                     {
 						MainWindow.appData.AppConfig.IconSortType = SortType.CUSTOM;
-						if (MainWindow.mainWindow.Visibility == Visibility.Collapsed
-										|| MainWindow.mainWindow.Opacity != 1)
-						{
-							Growl.WarningGlobal("ÒÑ½«Í¼±êÅÅĞò¹æÔòÖØÖÃÎª×Ô¶¨Òå!");
-						}
-						else
-						{
-							Growl.Warning("ÒÑ½«Í¼±êÅÅĞò¹æÔòÖØÖÃÎª×Ô¶¨Òå!", "MainWindowGrowl");
-						}
+						Growl.WarningGlobal("å·²å°†å›¾æ ‡æ’åºè§„åˆ™é‡ç½®ä¸ºè‡ªå®šä¹‰!");
 					}
 				}
 				else
