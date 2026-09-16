@@ -150,9 +150,7 @@
             <hc:ScrollViewer IsInertiaEnabled="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="8">
                 <ListBox x:Name="IconGridListBox"
                          BorderThickness="0"
-                         Background="Transparent"
-                         AllowDrop="True"
-                         Drop="IconsArea_Drop">
+                         Background="Transparent">
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
                             <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="4,2,4,2"/>
@@ -178,7 +176,7 @@
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <hc:SimpleStackPanel Width="76"
-                                                 Height="76"
+                                                 MinHeight="76"
                                                  HorizontalAlignment="Center"
                                                  VerticalAlignment="Center"
                                                  Margin="3"
@@ -188,9 +186,9 @@
                                                  Tag="{Binding}">
                                 <Image Style="{StaticResource XiaoQIconImageStyle}"/>
                                 <TextBlock Text="{Binding Name}" 
-                                           MaxWidth="70"
+                                           MaxWidth="72"
                                            Margin="0,3,0,0"
-                                           FontSize="12"
+                                           FontSize="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=DataContext.AppConfig.IconFontSize, Mode=OneWay, FallbackValue=12}"
                                            TextWrapping="NoWrap"
                                            TextTrimming="CharacterEllipsis"
                                            TextAlignment="Center"

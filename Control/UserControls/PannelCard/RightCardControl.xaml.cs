@@ -252,7 +252,8 @@ namespace GeekDesk.Control.UserControls.PannelCard
                     break;
                 default:
                     IconInfoDialog dialog = new IconInfoDialog(info);
-                    dialog.dialog = HandyControl.Controls.Dialog.Show(dialog, "MainWindowDialog");
+                    dialog.Owner = MainWindow.mainWindow;
+                    dialog.ShowDialog();
                     break;
             }
         }

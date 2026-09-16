@@ -40,7 +40,7 @@ namespace GeekDesk.Constant
                     }
                 }
                 catch { }
-                return "1.0.0.2";
+                return "1.0.0.3";
             }
         }
 

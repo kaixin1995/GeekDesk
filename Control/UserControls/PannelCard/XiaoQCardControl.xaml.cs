@@ -246,7 +246,8 @@ namespace GeekDesk.Control.UserControls.PannelCard
             if (sender is MenuItem item && item.Tag is IconInfo icon)
             {
                 IconInfoDialog dialog = new IconInfoDialog(icon);
-                HandyControl.Controls.Dialog.Show(dialog, "MainWindowDialog");
+                dialog.Owner = MainWindow.mainWindow;
+                dialog.ShowDialog();
             }
         }
 
@@ -266,8 +267,10 @@ namespace GeekDesk.Control.UserControls.PannelCard
         #region 外部文件拖入
         private void IconsArea_Drop(object sender, DragEventArgs e)
         {
+            if (e.Handled) return;
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
+                e.Handled = true;
                 string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
                 MenuInfo targetMenu = CategoryListBox.SelectedItem as MenuInfo;
                 if (targetMenu != null && files != null)

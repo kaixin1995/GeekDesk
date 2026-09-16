@@ -259,7 +259,8 @@ namespace GeekDesk.Util
                 StartArg_NoWrite = FileUtil.GetArgByLnk(tempPath)
             };
             iconInfo.DefaultImage_NoWrite = iconInfo.ImageByteArr;
-            iconInfo.Name_NoWrite = System.IO.Path.GetFileNameWithoutExtension(tempPath);
+            string rawName = System.IO.Path.GetFileNameWithoutExtension(tempPath);
+            iconInfo.Name_NoWrite = CleanIconName(rawName);
             if (StringUtil.IsEmpty(iconInfo.Name))
             {
                 iconInfo.Name_NoWrite = path;
@@ -299,12 +300,55 @@ namespace GeekDesk.Util
                 StartArg_NoWrite = FileUtil.GetArgByLnk(tempPath)
             };
             iconInfo.DefaultImage_NoWrite = iconInfo.ImageByteArr;
-            iconInfo.Name = System.IO.Path.GetFileNameWithoutExtension(tempPath);
+            string rawName = System.IO.Path.GetFileNameWithoutExtension(tempPath);
+            iconInfo.Name = CleanIconName(rawName);
             if (StringUtil.IsEmpty(iconInfo.Name))
             {
                 iconInfo.Name_NoWrite = path;
             }
             return iconInfo;
+        }
+
+        /// <summary>
+        /// 清理快捷方式名称后缀及残留扩展名 (如去除 ' - 快捷方式'、'.exe' 等)
+        /// </summary>
+        public static string CleanIconName(string rawName)
+        {
+            if (string.IsNullOrWhiteSpace(rawName)) return rawName;
+
+            string cleanName = rawName.Trim();
+
+            string[] suffixes = new[]
+            {
+                " - 快捷方式",
+                "- 快捷方式",
+                " -快捷方式",
+                " 快捷方式",
+                " - Shortcut",
+                "- Shortcut",
+                " -Shortcut",
+                " Shortcut"
+            };
+
+            foreach (var suffix in suffixes)
+            {
+                if (cleanName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+                {
+                    cleanName = cleanName.Substring(0, cleanName.Length - suffix.Length).Trim();
+                    break;
+                }
+            }
+
+            if (cleanName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ||
+                cleanName.EndsWith(".lnk", StringComparison.OrdinalIgnoreCase) ||
+                cleanName.EndsWith(".url", StringComparison.OrdinalIgnoreCase) ||
+                cleanName.EndsWith(".bat", StringComparison.OrdinalIgnoreCase) ||
+                cleanName.EndsWith(".cmd", StringComparison.OrdinalIgnoreCase))
+            {
+                cleanName = System.IO.Path.GetFileNameWithoutExtension(cleanName);
+            }
+
+            return string.IsNullOrWhiteSpace(cleanName) ? rawName : cleanName;
         }
 
         /// <summary>
@@ -380,6 +424,20 @@ namespace GeekDesk.Util
                 if (menu.IconList == null)
                 {
                     menu.IconList = new ObservableCollection<IconInfo>();
+                }
+                else
+                {
+                    foreach (var icon in menu.IconList)
+                    {
+                        if (!string.IsNullOrEmpty(icon.Name))
+                        {
+                            string cleaned = CleanIconName(icon.Name);
+                            if (!cleaned.Equals(icon.Name))
+                            {
+                                icon.Name = cleaned;
+                            }
+                        }
+                    }
                 }
                 FixMenuHierarchy(menu.Children);
             }

@@ -67,6 +67,7 @@ namespace GeekDesk.ViewModel
         private bool selfStartUped = false;  //是否已设置
         private bool pmModel = false; //性能模式
         private string textColor = "#000000"; //字体颜色
+        private double iconFontSize = 12; // 图标文字大小 (默认12)
         private double imgPanelWidth = 72;
         private double imgPanelHeight = 72;
         private bool marginHide = true; //贴边隐藏 (默认启用音速启动贴边)
@@ -508,6 +509,21 @@ namespace GeekDesk.ViewModel
                 //设置容器高度
                 ImgPanelHeight = ImageHeight * s;
                 OnPropertyChanged("ImageHeight");
+            }
+        }
+
+        public double IconFontSize
+        {
+            get
+            {
+                if (iconFontSize < 10) iconFontSize = 12;
+                return iconFontSize;
+            }
+            set
+            {
+                iconFontSize = value;
+                OnPropertyChanged("IconFontSize");
+                CommonCode.RequestSaveAppData();
             }
         }
 

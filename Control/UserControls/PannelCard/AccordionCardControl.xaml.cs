@@ -363,10 +363,8 @@ namespace GeekDesk.Control.UserControls.PannelCard
                 ItemsSource = menu.IconList,
                 BorderThickness = new Thickness(0),
                 Background = Brushes.Transparent,
-                AllowDrop = true,
                 Tag = menu
             };
-            iconListBox.Drop += DrawerIcons_Drop;
 
             // WrapPanel 面板：从左到右依次排列，满行自动换行
             FrameworkElementFactory panelFactory = new FrameworkElementFactory(typeof(WrapPanel));
@@ -404,7 +402,7 @@ namespace GeekDesk.Control.UserControls.PannelCard
 
             FrameworkElementFactory stackPanel = new FrameworkElementFactory(typeof(HandyControl.Controls.SimpleStackPanel));
             stackPanel.SetBinding(FrameworkElement.WidthProperty, new Binding("AppConfig.ImgPanelWidth") { Source = appData });
-            stackPanel.SetBinding(FrameworkElement.HeightProperty, new Binding("AppConfig.ImgPanelHeight") { Source = appData });
+            stackPanel.SetBinding(FrameworkElement.MinHeightProperty, new Binding("AppConfig.ImgPanelHeight") { Source = appData });
             stackPanel.SetValue(FrameworkElement.HorizontalAlignmentProperty, HorizontalAlignment.Center);
             stackPanel.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
             stackPanel.SetValue(FrameworkElement.MarginProperty, new Thickness(3));
@@ -424,7 +422,7 @@ namespace GeekDesk.Control.UserControls.PannelCard
             textBlock.SetBinding(TextBlock.TextProperty, new Binding("Name"));
             textBlock.SetValue(FrameworkElement.MaxWidthProperty, 68.0);
             textBlock.SetValue(FrameworkElement.MarginProperty, new Thickness(0, 3, 0, 0));
-            textBlock.SetValue(TextBlock.FontSizeProperty, 12.0);
+            textBlock.SetBinding(TextBlock.FontSizeProperty, new Binding("AppConfig.IconFontSize") { Source = appData, FallbackValue = 12.0 });
             textBlock.SetValue(TextBlock.TextWrappingProperty, TextWrapping.NoWrap);
             textBlock.SetValue(TextBlock.TextTrimmingProperty, TextTrimming.CharacterEllipsis);
             textBlock.SetValue(TextBlock.TextAlignmentProperty, TextAlignment.Center);
@@ -657,7 +655,8 @@ namespace GeekDesk.Control.UserControls.PannelCard
             if (sender is MenuItem item && item.Tag is IconInfo icon)
             {
                 IconInfoDialog dialog = new IconInfoDialog(icon);
-                HandyControl.Controls.Dialog.Show(dialog, "MainWindowDialog");
+                dialog.Owner = MainWindow.mainWindow;
+                dialog.ShowDialog();
             }
         }
 
@@ -681,8 +680,10 @@ namespace GeekDesk.Control.UserControls.PannelCard
         #region 外部文件拖入
         private void DrawerIcons_Drop(object sender, DragEventArgs e)
         {
+            if (e.Handled) return;
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
+                e.Handled = true;
                 string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
                 MenuInfo targetMenu = null;
 
