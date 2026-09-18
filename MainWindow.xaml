@@ -129,9 +129,6 @@
                         <RowDefinition Height="28"></RowDefinition>
                     </Grid.RowDefinitions>
 
-                    <CheckBox Style="{StaticResource MyCheckBoxStyle}" x:Name="ShowBox" Visibility="Hidden" Panel.ZIndex="2"/>
-                    <CheckBox Style="{StaticResource MyCheckBoxStyle}" x:Name="HideBox" Visibility="Hidden" Panel.ZIndex="2"/>
-
                     <StackPanel HorizontalAlignment="Center" Panel.ZIndex="99" hc:Growl.GrowlParent="False" hc:Growl.Token="MainWindowAskGrowl" Grid.Row="1"/>
 
                     <!-- 标题栏与常用操作 (紧凑精致) -->
@@ -272,30 +269,6 @@
                             </Border.Effect>
                         </ot:PasswordDialog>
                     </Grid>
-
-                    <Border x:Name="SearchResContainer" Panel.ZIndex="2" 
-                        Visibility="Collapsed"
-                        Grid.Row="1" 
-                        HorizontalAlignment="Right" MaxWidth="200" 
-                        VerticalAlignment="Top"
-                        CornerRadius="4"
-                        Margin="0,48,10,0"
-                        >
-                        <Border.Style>
-                            <Style TargetType="Border" >
-                                <Setter Property="Background">
-                                    <Setter.Value>
-                                        <SolidColorBrush Color="White" Opacity="0.9"/>
-                                    </Setter.Value>
-                                </Setter>
-                                <Setter Property="MaxWidth" Value="300"/>
-                            </Style>
-                        </Border.Style>
-                        <WrapPanel Margin="6">
-                            <TextBlock Opacity="0.7" Text="g:"/>
-                            <TextBlock x:Name="GeekDeskSearchTotal" Opacity="0.7" Text="0"/>
-                        </WrapPanel>
-                    </Border>
 
                     <hc:NotifyIcon Icon="/Logo.ico" Click="NotifyIcon_Click" x:Name="BarIcon"
                             Visibility="{Binding AppConfig.ShowBarIcon, Mode=TwoWay, Converter={StaticResource Boolean2VisibilityConverter}}">

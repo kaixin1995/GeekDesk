@@ -17,11 +17,7 @@ namespace GeekDesk.Converts
 
             AppConfig config = MainWindow.appData.AppConfig;
 
-            if (WidthTypeEnum.LEFT_CARD == type)
-            {
-                return config.MenuCardWidth;
-            }
-            else if (WidthTypeEnum.RIGHT_CARD == type)
+            if (WidthTypeEnum.RIGHT_CARD == type)
             {
                 return config.WindowWidth - config.MenuCardWidth;
             } else if (WidthTypeEnum.RIGHT_CARD_HALF == type)
@@ -30,13 +26,6 @@ namespace GeekDesk.Converts
             } else if (WidthTypeEnum.RIGHT_CARD_HALF_TEXT == type)
             {
                 return (config.WindowWidth - config.MenuCardWidth) * 0.618 - config.ImageWidth - 20;
-            } else if (WidthTypeEnum.RIGHT_CARD_20 == type)
-            {
-                return (config.WindowWidth - config.MenuCardWidth) - 20;
-            }
-            else if (WidthTypeEnum.RIGHT_CARD_40 == type)
-            {
-                return (config.WindowWidth - config.MenuCardWidth) - 40;
             }
             else if (WidthTypeEnum.RIGHT_CARD_70 == type)
             {

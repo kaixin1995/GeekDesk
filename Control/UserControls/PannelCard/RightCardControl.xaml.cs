@@ -1,11 +1,9 @@
-﻿using DraggAnimatedPanelExample;
-using GeekDesk.Constant;
+﻿using GeekDesk.Constant;
 using GeekDesk.Control.Other;
 using GeekDesk.Control.Windows;
 using GeekDesk.Converts;
 using GeekDesk.Util;
 using GeekDesk.ViewModel;
-using GeekDesk.ViewModel.Temp;
 using HandyControl.Controls;
 using Newtonsoft.Json.Linq;
 using System;
@@ -34,7 +32,6 @@ namespace GeekDesk.Control.UserControls.PannelCard
 
         ListBoxDragDropManager<IconInfo> dragMgr;
 
-        //private Thread dropCheckThread = null;
 
         public RightCardControl()
         {
@@ -47,62 +44,6 @@ namespace GeekDesk.Control.UserControls.PannelCard
         {
             this.dragMgr = new ListBoxDragDropManager<IconInfo>(this.IconListBox);
         }
-
-
-        //#region 图标拖动
-        //DelegateCommand<int[]> _swap;
-        //public DelegateCommand<int[]> SwapCommand
-        //{
-        //    get
-        //    {
-        //        if (_swap == null)
-        //            _swap = new DelegateCommand<int[]>(
-        //                (indexes) =>
-        //                {
-        //                    DROP_ICON = true;
-        //                    if (appData.AppConfig.IconSortType != SortType.CUSTOM
-        //                    && (dropCheckThread == null || !dropCheckThread.IsAlive))
-        //                    {
-        //                        dropCheckThread = new Thread(() =>
-        //                        {
-        //                            do
-        //                            {
-        //                                DROP_ICON = false;
-        //                                Thread.Sleep(1000);
-        //                            } while (DROP_ICON);
-
-        //                            MainWindow.appData.AppConfig.IconSortType = SortType.CUSTOM;
-        //                            App.Current.Dispatcher.Invoke(() =>
-        //                            {
-        //                                if (MainWindow.mainWindow.Visibility == Visibility.Collapsed
-        //                                || MainWindow.mainWindow.Opacity != 1)
-        //                                {
-        //                                    Growl.WarningGlobal("已将图标排序规则重置为自定义!");
-        //                                }
-        //                                else
-        //                                {
-        //                                    Growl.Warning("已将图标排序规则重置为自定义!", "MainWindowGrowl");
-        //                                }
-        //                            });
-        //                        });
-        //                        dropCheckThread.Start();
-        //                    }
-        //                    int fromS = indexes[0];
-        //                    int to = indexes[1];
-        //                    ObservableCollection<IconInfo> iconList = appData.MenuList[appData.AppConfig.SelectedMenuIndex].IconList;
-        //                    var elementSource = iconList[to];
-        //                    var dragged = iconList[fromS];
-
-        //                    iconList.Remove(dragged);
-        //                    iconList.Insert(to, dragged);
-        //                }
-        //            );
-        //        return _swap;
-        //    }
-        //}
-
-        //#endregion 图标拖动
-
 
 
 

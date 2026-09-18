@@ -6,7 +6,6 @@
              xmlns:hc="https://handyorg.github.io/handycontrol"
              xmlns:cvt="clr-namespace:GeekDesk.Converts"
              xmlns:cst="clr-namespace:GeekDesk.Constant"
-             xmlns:component="clr-namespace:GeekDesk.CustomComponent.VirtualizingWrapPanel"
              xmlns:xf="clr-namespace:XamlFlair;assembly=XamlFlair.WPF"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="360"

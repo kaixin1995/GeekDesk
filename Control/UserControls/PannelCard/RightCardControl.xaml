@@ -3,11 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:temp="clr-namespace:GeekDesk.ViewModel.Temp"
              xmlns:hc="https://handyorg.github.io/handycontrol"
              xmlns:cvt="clr-namespace:GeekDesk.Converts"
               xmlns:cst="clr-namespace:GeekDesk.Constant"
-             xmlns:DraggAnimatedPanel="clr-namespace:DraggAnimatedPanel"
              xmlns:component="clr-namespace:GeekDesk.CustomComponent.VirtualizingWrapPanel"
              xmlns:xf="clr-namespace:XamlFlair;assembly=XamlFlair.WPF"
              mc:Ignorable="d"
@@ -109,7 +107,6 @@
 
         <cvt:OpcityConvert x:Key="OpcityConvert"/>
         <cvt:GetWidthByWWConvert x:Key="GetWidthByWWConvert"/>
-        <temp:SearchIconList x:Key="SearchIconList"/>
         <cvt:Boolean2VisibilityConverter x:Key="MyBoolean2VisibilityConverter"/>
         <cvt:ValueConvert x:Key="ValueConvert"/>
         <cst:RunTimeStatus x:Key="RunTimeStatus"/>

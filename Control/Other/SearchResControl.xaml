@@ -8,7 +8,6 @@
              xmlns:hc="https://handyorg.github.io/handycontrol"
              xmlns:cvt="clr-namespace:GeekDesk.Converts"
              xmlns:cst="clr-namespace:GeekDesk.Constant"
-             xmlns:DraggAnimatedPanel="clr-namespace:DraggAnimatedPanel"
              xmlns:xf="clr-namespace:XamlFlair;assembly=XamlFlair.WPF"
              xmlns:viewmodel="clr-namespace:GeekDesk.ViewModel" 
              mc:Ignorable="d" 

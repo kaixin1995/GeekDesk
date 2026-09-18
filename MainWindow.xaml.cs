@@ -1,4 +1,4 @@
-﻿using GeekDesk.Constant;
+using GeekDesk.Constant;
 using GeekDesk.Control.Other;
 using GeekDesk.Control.UserControls.Config;
 using GeekDesk.Control.UserControls.PannelCard;
@@ -31,7 +31,6 @@ using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
 using System.Windows.Shell;
 using System.Windows.Threading;
-using static GeekDesk.Util.ShowWindowFollowMouse;
 
 namespace GeekDesk
 {
@@ -159,8 +158,6 @@ namespace GeekDesk
                     RunTimeStatus.EVERYTHING_NEW_SEARCH = true;
                     //显示搜索结果列表
                     RightCard.VisibilitySearchCard(Visibility.Visible);
-                    //暂时隐藏条目信息
-                    SearchResContainer.Visibility = Visibility.Collapsed;
                     //显示加载条
                     RightCard.Loading_RightCard.Visibility = Visibility.Visible;
                     object obj = RightCard.VerticalCard.Content;
@@ -173,8 +170,6 @@ namespace GeekDesk
                 }
             } else
             {
-                //隐藏条目信息
-                SearchResContainer.Visibility = Visibility.Collapsed;
                 //清空查询结果
                 object obj = RightCard.VerticalCard.Content;
                 if (obj != null)
@@ -292,7 +287,6 @@ namespace GeekDesk
                     SearchBox.TextChanged -= SearchBox_TextChanged;
                     SearchBox.Clear();
                     SearchBox.TextChanged += SearchBox_TextChanged;
-                    SearchResContainer.Visibility = Visibility.Collapsed;
                     RightCard.VerticalCard.Content = null;
                     RightCard.VisibilitySearchCard(Visibility.Collapsed);
                     RightCard.Visibility = Visibility.Collapsed;
@@ -393,9 +387,6 @@ namespace GeekDesk
 
             //建立相对路径
             RelativePathThread.MakeRelativePath();
-
-            //毛玻璃  暂时未解决阴影问题
-            //BlurGlassUtil.EnableBlur(this);
 
             //设置归属桌面  解决桌面覆盖程序界面的bug
             WindowUtil.SetOwner(this, WindowUtil.GetDesktopHandle(this, DesktopLayer.Progman));

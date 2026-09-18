@@ -185,9 +185,5 @@ namespace GeekDesk.Control.UserControls.Config
             }
             catch (Exception ex) { }
         }
-
-        private void EveryThing_Changed(object sender, RoutedEventArgs e)
-        {
-        }
     }
 }
