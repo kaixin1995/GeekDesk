@@ -83,12 +83,18 @@
                 </hc:UniformSpacingPanel>
                 <TextBlock Text="其它"  Margin="0,25,0,0"/>
                 <hc:UniformSpacingPanel Spacing="10" Margin="20,8,0,0">
-                    <Button Content="备份数据" 
+                    <Button Content="备份数据"
                             hc:Poptip.Content="当数据文件损坏时, 以便能够恢复部分数据 (损坏时将有操作提示)"
                             hc:Poptip.Placement="Top"
                             hc:Poptip.IsOpen="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}"
-                            Style="{StaticResource MyBtnStyle}" 
+                            Style="{StaticResource MyBtnStyle}"
                             Click="BakDataFile"/>
+                    <Button Content="从备份恢复"
+                            hc:Poptip.Content="选择 bak 目录中的备份文件, 恢复前会自动备份当前数据"
+                            hc:Poptip.Placement="Top"
+                            hc:Poptip.IsOpen="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}"
+                            Style="{StaticResource MyBtnStyle}"
+                            Click="RestoreBackup_Click"/>
                 </hc:UniformSpacingPanel>
             </StackPanel>
         </hc:SimplePanel>

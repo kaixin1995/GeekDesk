@@ -240,7 +240,7 @@ namespace GeekDesk
 
                             this.Dispatcher.Invoke(() =>
                             {
-                                SearchResControl control = new SearchResControl(resList);
+                                SearchResControl control = new SearchResControl(resList, inputText);
                                 RightCard.VerticalCard.Content = control;
                                 //关闭加载效果
                                 RightCard.Loading_RightCard.Visibility = Visibility.Collapsed;

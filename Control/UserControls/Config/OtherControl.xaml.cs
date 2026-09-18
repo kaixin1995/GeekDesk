@@ -119,6 +119,59 @@ namespace GeekDesk.Control.UserControls.Config
             CommonCode.BakAppData();
         }
 
+        /// <summary>
+        /// 从备份文件恢复数据
+        /// </summary>
+        private void RestoreBackup_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Microsoft.Win32.OpenFileDialog ofd = new Microsoft.Win32.OpenFileDialog
+                {
+                    Title = "选择备份文件",
+                    Filter = "bak文件(*.bak)|*.bak",
+                };
+                if (Directory.Exists(Constants.DATA_FILE_BAK_DIR_PATH))
+                {
+                    ofd.InitialDirectory = Constants.DATA_FILE_BAK_DIR_PATH;
+                }
+                if (ofd.ShowDialog() != true) return;
+
+                AppData restored = CommonCode.DeserializeAppData(File.ReadAllText(ofd.FileName, System.Text.Encoding.UTF8));
+                if (restored == null)
+                {
+                    HandyControl.Controls.Growl.WarningGlobal("备份文件内容无效, 恢复失败!");
+                    return;
+                }
+                CommonCode.FixMenuHierarchy(restored.MenuList);
+
+                //恢复前先把当前数据做一次安全备份
+                Directory.CreateDirectory(Constants.DATA_FILE_BAK_DIR_PATH);
+                string safetyPath = Path.Combine(Constants.DATA_FILE_BAK_DIR_PATH,
+                    "pre-restore-" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".bak");
+                CommonCode.SaveAppData(MainWindow.appData, safetyPath);
+
+                //替换运行时数据并刷新界面
+                MainWindow.appData = restored;
+                MainWindow.mainWindow.DataContext = restored;
+                MainWindow.mainWindow.AccordionCard.ReInit();
+                MainWindow.mainWindow.XiaoQCard.ReloadFromData();
+                MainWindow.mainWindow.ApplyLauncherStyle();
+                MainWindow.mainWindow.ApplyThemeStyle();
+                BGSettingUtil.BGSetting();
+
+                HandyControl.Controls.Growl.SuccessGlobal("数据已从备份恢复! (恢复前的数据已另存为 " + Path.GetFileName(safetyPath) + ")");
+
+                //设置窗口持有的旧配置已失效, 关闭待用户重新打开
+                Window.GetWindow(this)?.Close();
+            }
+            catch (Exception ex)
+            {
+                LogUtil.WriteErrorLog(ex, "从备份恢复失败!");
+                HandyControl.Controls.Growl.WarningGlobal("恢复失败, 备份文件无效或已损坏!");
+            }
+        }
+
         private void ShowSeconds_Click(object sender, RoutedEventArgs e)
         {
             if (MainWindow.appData.AppConfig.SecondsWindow == true)

@@ -41,6 +41,19 @@ namespace GeekDesk.Control.UserControls.PannelCard
             InitDrawerLayout();
         }
 
+        /// <summary>
+        /// 数据被整体替换 (如备份恢复) 后重新初始化
+        /// </summary>
+        public void ReInit()
+        {
+            if (appData?.MenuList != null)
+            {
+                appData.MenuList.CollectionChanged -= MenuList_CollectionChanged;
+                appData.MenuList.CollectionChanged += MenuList_CollectionChanged;
+            }
+            InitDrawerLayout();
+        }
+
         public void InitDrawerLayout()
         {
             RootGrid.Children.Clear();
@@ -604,6 +617,32 @@ namespace GeekDesk.Control.UserControls.PannelCard
                 InitDrawerLayout();
             }
         }
+
+        private void MoveMenuUp_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuItem item && item.Tag is MenuInfo menu)
+            {
+                int idx = appData.MenuList.IndexOf(menu);
+                if (idx > 0)
+                {
+                    appData.MenuList.Move(idx, idx - 1);
+                    CommonCode.SaveAppData(appData, Constants.DATA_FILE_PATH);
+                }
+            }
+        }
+
+        private void MoveMenuDown_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuItem item && item.Tag is MenuInfo menu)
+            {
+                int idx = appData.MenuList.IndexOf(menu);
+                if (idx >= 0 && idx < appData.MenuList.Count - 1)
+                {
+                    appData.MenuList.Move(idx, idx + 1);
+                    CommonCode.SaveAppData(appData, Constants.DATA_FILE_PATH);
+                }
+            }
+        }
         #endregion
 
         #region 图标交互与启动
@@ -685,15 +724,30 @@ namespace GeekDesk.Control.UserControls.PannelCard
         {
             if (sender is MenuItem item && item.Tag is IconInfo icon)
             {
+                MenuInfo ownerMenu = null;
                 foreach (var menu in appData.MenuList)
                 {
                     if (menu.IconList.Contains(icon))
                     {
-                        menu.IconList.Remove(icon);
-                        CommonCode.SaveAppData(appData, Constants.DATA_FILE_PATH);
+                        ownerMenu = menu;
                         break;
                     }
                 }
+                if (ownerMenu == null) return;
+                int index = ownerMenu.IconList.IndexOf(icon);
+                ownerMenu.IconList.Remove(icon);
+                CommonCode.SaveAppData(appData, Constants.DATA_FILE_PATH);
+                HandyControl.Controls.Growl.Ask("已从「" + ownerMenu.MenuName + "」移除 " + icon.Name + ", 撤销本次移除?",
+                    isConfirmed =>
+                    {
+                        if (isConfirmed)
+                        {
+                            int insertIdx = Math.Min(index, ownerMenu.IconList.Count);
+                            ownerMenu.IconList.Insert(insertIdx, icon);
+                            CommonCode.SaveAppData(appData, Constants.DATA_FILE_PATH);
+                        }
+                        return true;
+                    }, "MainWindowAskGrowl");
             }
         }
         #endregion

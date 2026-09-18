@@ -111,6 +111,15 @@ namespace GeekDesk.Util
         private static System.Threading.Timer _saveDebounceTimer;
 
         /// <summary>
+        /// 从 JSON 反序列化 AppData (供备份恢复等场景使用)
+        /// </summary>
+        public static AppData DeserializeAppData(string json)
+        {
+            if (string.IsNullOrWhiteSpace(json)) return null;
+            return JsonConvert.DeserializeObject<AppData>(json, JsonSettings);
+        }
+
+        /// <summary>
         /// 异步防抖保存（针对高频属性变更，如动画、窗口坐标拖动、快速点击）
         /// </summary>
         public static void RequestSaveAppData()

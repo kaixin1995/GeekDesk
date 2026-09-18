@@ -29,8 +29,18 @@ namespace GeekDesk.Control.Other
     /// </summary>
     public partial class SearchResControl : UserControl
     {
+        /// <summary>搜索命中关键字 (用于结果项名称高亮)</summary>
+        public string SearchText { get; set; }
+
         public SearchResControl(ObservableCollection<IconInfo> iconList)
         {
+            this.DataContext = iconList;
+            InitializeComponent();
+        }
+
+        public SearchResControl(ObservableCollection<IconInfo> iconList, string searchText)
+        {
+            SearchText = searchText;
             this.DataContext = iconList;
             InitializeComponent();
         }
@@ -80,6 +90,8 @@ namespace GeekDesk.Control.Other
                 {
                     ProcessUtil.StartIconApp(icon, IconStartType.DEFAULT_STARTUP);
                 }
+                //启动后自动收起搜索框与结果列表
+                MainWindow.mainWindow.HidedSearchBox();
             }
         }
 

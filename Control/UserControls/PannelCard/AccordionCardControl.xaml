@@ -29,6 +29,8 @@
             <MenuItem Header="重命名分类" Click="RenameMenu_Click" Tag="{Binding}"/>
             <MenuItem Header="加密此分类" Click="EncryptMenu_Click" Tag="{Binding}"/>
             <Separator/>
+            <MenuItem Header="上移分类" Click="MoveMenuUp_Click" Tag="{Binding}"/>
+            <MenuItem Header="下移分类" Click="MoveMenuDown_Click" Tag="{Binding}"/>
             <MenuItem Header="删除分类" Click="DeleteMenu_Click" Tag="{Binding}"/>
         </ContextMenu>
 

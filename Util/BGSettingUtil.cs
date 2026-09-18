@@ -10,7 +10,8 @@ namespace GeekDesk.Util
 {
     public class BGSettingUtil
     {
-        private static readonly AppConfig appConfig = MainWindow.appData.AppConfig;
+        //属性方式读取, 保证备份恢复等替换 appData 实例后仍取到最新配置
+        private static AppConfig appConfig => MainWindow.appData.AppConfig;
         public static void BGSetting()
         {
             if (MainWindow.mainWindow == null || MainWindow.mainWindow.BGBorder == null) return;

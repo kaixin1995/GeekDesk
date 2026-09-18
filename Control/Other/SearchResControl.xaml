@@ -162,22 +162,23 @@
                                         <StackPanel Width="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}},Path=DataContext.AppConfig.WindowWidth, Mode=OneWay, 
                                                         Converter={StaticResource GetWidthByWWConvert}, 
                                                         ConverterParameter={x:Static cst:WidthTypeEnum.RIGHT_CARD_HALF_TEXT}}" >
-                                            <TextBlock
+                                            <local:HighlightTextBlock
                                                    Margin="10,5,0,0"
                                                    MaxHeight="40"
                                                    FontSize="13"
                                                    TextTrimming="CharacterEllipsis"
-                                                   TextAlignment="Left" 
-                                                   VerticalAlignment="Center" 
+                                                   TextAlignment="Left"
+                                                   VerticalAlignment="Center"
                                                    Foreground="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}},Path=DataContext.AppConfig.TextColor}"
-                                                   Text="{Binding Name}"/>
+                                                   PlainText="{Binding Name}"
+                                                   HighlightText="{Binding SearchText, RelativeSource={RelativeSource AncestorType={x:Type local:SearchResControl}}}"/>
                                             <TextBlock
                                                    Margin="10,10,0,0"
                                                    MaxHeight="40"
                                                    FontSize="11"
                                                    TextTrimming="CharacterEllipsis"
-                                                   TextAlignment="Left" 
-                                                   VerticalAlignment="Center" 
+                                                   TextAlignment="Left"
+                                                   VerticalAlignment="Center"
                                                    Foreground="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}},Path=DataContext.AppConfig.TextColor}"
                                                    Text="{Binding Path}"/>
                                         </StackPanel>
