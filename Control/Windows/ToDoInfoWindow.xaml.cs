@@ -1,4 +1,4 @@
-﻿using GeekDesk.Constant;
+using GeekDesk.Constant;
 using GeekDesk.Interface;
 using GeekDesk.Util;
 using GeekDesk.ViewModel;
@@ -21,7 +21,8 @@ namespace GeekDesk.Control.Windows
         private static readonly int NEW_TODO = 1;
         private static readonly int DETAIL_TODO = 2;
 
-        private AppData appData = MainWindow.appData;
+        //属性方式读取, 保证备份恢复等替换 appData 实例后仍使用最新数据
+        private AppData appData => MainWindow.appData;
 
         //private ToDoInfo info;
 

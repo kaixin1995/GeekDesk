@@ -1,4 +1,4 @@
-﻿using GeekDesk.Control.UserControls.Backlog;
+using GeekDesk.Control.UserControls.Backlog;
 using GeekDesk.Interface;
 using GeekDesk.ViewModel;
 using HandyControl.Controls;
@@ -18,7 +18,8 @@ namespace GeekDesk.Control.Windows
     public partial class ToDoWindow : IWindowCommon
     {
         private static TodoControl backlog = new TodoControl();
-        private AppData appData = MainWindow.appData;
+        //属性方式读取, 保证备份恢复等替换 appData 实例后仍使用最新数据
+        private AppData appData => MainWindow.appData;
         private ToDoWindow()
         {
             InitializeComponent();

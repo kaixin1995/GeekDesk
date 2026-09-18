@@ -1,4 +1,4 @@
-﻿using GeekDesk.Constant;
+using GeekDesk.Constant;
 using GeekDesk.Control.Other;
 using GeekDesk.Control.Windows;
 using GeekDesk.Converts;
@@ -28,7 +28,8 @@ namespace GeekDesk.Control.UserControls.PannelCard
     /// </summary>
     public partial class RightCardControl : UserControl
     {
-        private AppData appData = MainWindow.appData;
+        //属性方式读取, 保证备份恢复等替换 appData 实例后仍使用最新数据
+        private AppData appData => MainWindow.appData;
 
         ListBoxDragDropManager<IconInfo> dragMgr;
 

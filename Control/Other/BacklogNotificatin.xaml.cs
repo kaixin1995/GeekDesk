@@ -1,4 +1,4 @@
-﻿using GeekDesk.Constant;
+using GeekDesk.Constant;
 using GeekDesk.Task;
 using GeekDesk.Util;
 using GeekDesk.ViewModel;
@@ -16,7 +16,8 @@ namespace GeekDesk.Control.Other
     public partial class BacklogNotificatin
     {
 
-        private AppData appData = MainWindow.appData;
+        //属性方式读取, 保证备份恢复等替换 appData 实例后仍使用最新数据
+        private AppData appData => MainWindow.appData;
         public BacklogNotificatin(ToDoInfo info)
         {
             InitializeComponent();
