@@ -17,7 +17,8 @@ namespace GeekDesk.Control.Other
     /// </summary>
     public partial class PasswordDialog
     {
-        private AppData appData = MainWindow.appData;
+        //属性方式读取, 保证备份恢复等替换 appData 实例后仍校验最新密码
+        private AppData appData => MainWindow.appData;
         
         public PasswordType type;
         public MenuInfo menuInfo;

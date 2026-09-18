@@ -20,6 +20,14 @@ namespace GeekDesk.Control.UserControls.Config
     {
         private static AppConfig appConfig = MainWindow.appData.AppConfig;
 
+        /// <summary>
+        /// 数据被整体替换 (如备份恢复) 后刷新捕获的配置引用
+        /// </summary>
+        public void ReloadConfig()
+        {
+            appConfig = MainWindow.appData.AppConfig;
+        }
+
         public ThemeControl()
         {
 

@@ -682,6 +682,12 @@ namespace GeekDesk
             if (PDDialog.Visibility == Visibility.Visible)
             {
                 RunTimeStatus.SHOW_MENU_PASSWORDBOX = true;
+                //重置弹框状态 (避免残留上一次的标题/提示/错误信息)
+                PDDialog.Title.Text = "请输入密码";
+                PDDialog.PasswordGrid.Visibility = Visibility.Visible;
+                PDDialog.HintGrid.Visibility = Visibility.Collapsed;
+                PDDialog.ErrorMsg.Visibility = Visibility.Hidden;
+                PDDialog.HintMsg.Visibility = Visibility.Hidden;
                 PDDialog.ClearVal();
                 PDDialog.HideErrorMsg();
                 PDDialog.count = 0;

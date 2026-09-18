@@ -102,6 +102,9 @@ namespace GeekDesk.Control.Windows
             {
                 window = new ConfigWindow(appConfig, mainWindow);
             }
+            //刷新静态子控件捕获的配置引用 (备份恢复等替换数据后仍指向最新配置)
+            theme.ReloadConfig();
+            motion.ReloadConfig();
             window.Show();
             Keyboard.Focus(window);
         }

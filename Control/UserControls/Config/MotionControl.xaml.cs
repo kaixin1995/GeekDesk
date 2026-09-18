@@ -20,7 +20,15 @@ namespace GeekDesk.Control.UserControls.Config
         public static bool hotkeyFinished = true; //热键设置结束
         private Key prevKeyTemp = Key.None; //上一个按键
         private readonly List<KeyEventArgs> keysTemp = new List<KeyEventArgs>();//存储一次快捷键集合
-        private readonly AppConfig appConfig = MainWindow.appData.AppConfig;
+        private AppConfig appConfig = MainWindow.appData.AppConfig;
+
+        /// <summary>
+        /// 数据被整体替换 (如备份恢复) 后刷新捕获的配置引用
+        /// </summary>
+        public void ReloadConfig()
+        {
+            appConfig = MainWindow.appData.AppConfig;
+        }
 
         public MotionControl()
         {
