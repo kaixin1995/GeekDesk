@@ -366,10 +366,6 @@ namespace GeekDesk
             //监听实时文件夹菜单
             FileWatcher.EnableLinkMenuWatcher(appData);
 
-
-            //更新任务开启  检测更新
-            UpdateTask.Start();
-
             //建立相对路径
             RelativePathThread.MakeRelativePath();
 

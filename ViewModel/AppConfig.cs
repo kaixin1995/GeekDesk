@@ -61,8 +61,6 @@ namespace GeekDesk.ViewModel
         private bool blurEffect = true; //毛玻璃效果 默认是
         private double blurValue;
 
-        private UpdateType updateType = UpdateType.Gitee; //更新源 默认gitee源
-
         private bool selfStartUp = true; //开机自启动设置
         private bool selfStartUped = false;  //是否已设置
         private bool pmModel = false; //性能模式
@@ -727,19 +725,6 @@ namespace GeekDesk.ViewModel
             {
                 toDoHotkeyStr = value;
                 OnPropertyChanged("ToDoHotkeyStr");
-            }
-        }
-
-        public UpdateType UpdateType
-        {
-            get
-            {
-                return updateType;
-            }
-            set
-            {
-                updateType = value;
-                OnPropertyChanged("UpdateType");
             }
         }
 
