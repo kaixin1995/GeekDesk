@@ -23,13 +23,12 @@ namespace GeekDesk.Control.Other
     /// </summary>
     public partial class MyColorPickerDialog
     {
-        public static ColorType COLOR_TYPE = new ColorType();
         private static AppConfig appConfig = MainWindow.appData.AppConfig;
 
-        public static HandyControl.Controls.Dialog dialog;
+        /// <summary>改为实例字段: 避免同时打开两个取色弹框时目标字段互相串台</summary>
+        private HandyControl.Controls.Dialog dialog;
+        private ColorType colorType;
         private System.Windows.Controls.Primitives.ToggleButton toggleButton = null;
-
-        private static ColorType colorType;
 
 
         public MyColorPickerDialog(string strType, string token)

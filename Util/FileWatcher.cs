@@ -40,36 +40,71 @@ namespace GeekDesk.Util
 
         private static void LinkIcon_Renamed(object sender, RenamedEventArgs e)
         {
-            IconInfo iconInfo = getIconInfoByPath(sender, e.OldFullPath);
-            iconInfo.Name = e.Name;
-            iconInfo.Path = e.FullPath;
+            try
+            {
+                IconInfo iconInfo = getIconInfoByPath(sender, e.OldFullPath);
+                if (iconInfo == null) return;
+                App.Current.Dispatcher.Invoke(() =>
+                {
+                    iconInfo.Name = e.Name;
+                    iconInfo.Path = e.FullPath;
+                });
+            }
+            catch (Exception ex)
+            {
+                LogUtil.WriteErrorLog(ex, "处理关联菜单重命名异常: " + e.FullPath);
+            }
         }
 
         private static void LinkIcon_Changed(object sender, FileSystemEventArgs e)
         {
-            IconInfo iconInfo = getIconInfoByPath(sender, e.FullPath);
-            if (iconInfo != null)
+            try
             {
-                IconInfo newIconInfo = CommonCode.GetIconInfoByPath(e.FullPath);
-                iconInfo.BitmapImage = newIconInfo.BitmapImage;
+                IconInfo iconInfo = getIconInfoByPath(sender, e.FullPath);
+                if (iconInfo != null)
+                {
+                    IconInfo newIconInfo = CommonCode.GetIconInfoByPath(e.FullPath);
+                    App.Current.Dispatcher.Invoke(() =>
+                    {
+                        iconInfo.BitmapImage = newIconInfo.BitmapImage;
+                    });
+                }
             }
-            
+            catch (Exception ex)
+            {
+                LogUtil.WriteErrorLog(ex, "处理关联菜单变更异常: " + e.FullPath);
+            }
         }
         private static void LinkIcon_Deleted(object sender, FileSystemEventArgs e)
         {
-            IconInfo iconInfo = getIconInfoByPath(sender, e.FullPath);
-            App.Current.Dispatcher.Invoke(() =>
+            try
             {
-                linkMenuMap[sender as FileSystemWatcher].IconList.Remove(iconInfo);
-            });
+                IconInfo iconInfo = getIconInfoByPath(sender, e.FullPath);
+                if (iconInfo == null) return;
+                App.Current.Dispatcher.Invoke(() =>
+                {
+                    linkMenuMap[sender as FileSystemWatcher].IconList.Remove(iconInfo);
+                });
+            }
+            catch (Exception ex)
+            {
+                LogUtil.WriteErrorLog(ex, "处理关联菜单删除异常: " + e.FullPath);
+            }
         }
         private static void LinkIcon_Created(object sender, FileSystemEventArgs e)
         {
-            IconInfo iconInfo = CommonCode.GetIconInfoByPath(e.FullPath);
-            App.Current.Dispatcher.Invoke(() =>
+            try
             {
-                linkMenuMap[sender as FileSystemWatcher].IconList.Add(iconInfo);
-            });
+                IconInfo iconInfo = CommonCode.GetIconInfoByPath(e.FullPath);
+                App.Current.Dispatcher.Invoke(() =>
+                {
+                    linkMenuMap[sender as FileSystemWatcher].IconList.Add(iconInfo);
+                });
+            }
+            catch (Exception ex)
+            {
+                LogUtil.WriteErrorLog(ex, "处理关联菜单新建异常: " + e.FullPath);
+            }
         }
 
         private static IconInfo getIconInfoByPath(object sender, string path)
@@ -143,9 +178,11 @@ namespace GeekDesk.Util
         {
             try
             {
-                foreach (FileSystemWatcher watcher in linkMenuMap.Keys)
+                //复制键列表避免遍历中 Remove 抛集合修改异常
+                List<FileSystemWatcher> watchers = new List<FileSystemWatcher>(linkMenuMap.Keys);
+                foreach (FileSystemWatcher watcher in watchers)
                 {
-                    if (linkMenuMap[watcher] == menuInfo)
+                    if (linkMenuMap.TryGetValue(watcher, out MenuInfo mapped) && mapped == menuInfo)
                     {
                         //释放资源
                         watcher.Changed -= LinkIcon_Changed;
@@ -160,7 +197,7 @@ namespace GeekDesk.Util
             }
             catch (Exception e)
             {
-                //nothing
+                LogUtil.WriteErrorLog(e, "移除LinkMenu监听异常");
             }
         }
 

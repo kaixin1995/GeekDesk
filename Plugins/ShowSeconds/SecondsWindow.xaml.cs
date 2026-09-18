@@ -154,78 +154,89 @@ namespace ShowSeconds
                         && y > 1037 / h * height
                         && y < 1074 / h * height)
                     {
-
-                        System.Drawing.Color c;
-                        int count = sleepTime;
-                        do
+                        //在后台线程等待时钟区域颜色变化, 避免原 Sleep 轮询阻塞UI线程 (最长卡顿1秒)
+                        System.Threading.Thread waitThread = new System.Threading.Thread(() =>
                         {
-                            c = GetBottomBeforeColor();
-                            if (c.A != beforeColor.A
-                            || c.R != beforeColor.R
-                            || c.G != beforeColor.G
-                            || c.B != beforeColor.B)
+                            bool changed = false;
+                            System.Drawing.Color c;
+                            int count = sleepTime;
+                            do
                             {
-                                break;
-                            }
-                            Thread.Sleep(50);
-                            count -= 50;
-                        } while (count > 0);
-
-                        if (c.A != beforeColor.A
-                            || c.R != beforeColor.R
-                            || c.G != beforeColor.G
-                            || c.B != beforeColor.B)
-                        {
-                            //判断是否展开时钟
-                            System.Drawing.Color ct = GetTopBeforeColor();
-                            if (ct.A != topBeforeColor.A
-                            || ct.R != topBeforeColor.R
-                            || ct.G != topBeforeColor.G
-                            || ct.B != topBeforeColor.B)
-                            {
-                                expandClock = true;
-                            }
-                            else
-                            {
-                                expandClock = false;
-                            }
-
-                            if (!BGBorder.IsVisible)
-                            {
-
-                                System.Drawing.Color theamColor = GetColor(1919, 1079);
-                                if (CalculateLight(theamColor) > 255 / 2)
+                                c = GetBottomBeforeColor();
+                                if (c.A != beforeColor.A
+                                || c.R != beforeColor.R
+                                || c.G != beforeColor.G
+                                || c.B != beforeColor.B)
                                 {
-                                    //light
-                                    BGBorder.Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(theamColor.A, theamColor.R, theamColor.G, theamColor.B));
-                                    SecondsText.Foreground = Constants.lightFont;
+                                    changed = true;
+                                    break;
                                 }
-                                else
-                                {
-                                    // dark
-                                    //BGBorder.Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(theamColor.A, theamColor.R, theamColor.G, theamColor.B));
-                                    BGBorder.Background = Constants.darkBG;
-                                    SecondsText.Foreground = Constants.darkFont;
-                                }
+                                Thread.Sleep(50);
+                                count -= 50;
+                            } while (count > 0);
 
-                                SecondsDataContext dc = this.DataContext as SecondsDataContext;
-                                dc.Seconds = (DateTime.Now.Hour).ToString() + ":" +
-                                    FormatMS(DateTime.Now.Minute) + ":" +
-                                    FormatMS(DateTime.Now.Second);
-
-                                int sx = (int)(SystemParameters.PrimaryScreenWidth * lProportion);
-                                int sMarginBottom = (int)(SystemParameters.WorkArea.Height * tProportion);
-                                Left = sx - Width;
-                                Top = SystemParameters.WorkArea.Height - Height;
-                                BGBorder.Visibility = Visibility.Visible;
-                                timer.Start();
-                            }
-                            else
+                            App.Current.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action(() =>
                             {
-                                BGBorder.Visibility = Visibility.Collapsed;
-                                timer.Stop();
-                            }
-                        }
+                                try
+                                {
+                                    if (changed)
+                                    {
+                                        //判断是否展开时钟
+                                        System.Drawing.Color ct = GetTopBeforeColor();
+                                        if (ct.A != topBeforeColor.A
+                                        || ct.R != topBeforeColor.R
+                                        || ct.G != topBeforeColor.G
+                                        || ct.B != topBeforeColor.B)
+                                        {
+                                            expandClock = true;
+                                        }
+                                        else
+                                        {
+                                            expandClock = false;
+                                        }
+
+                                        if (!BGBorder.IsVisible)
+                                        {
+
+                                            System.Drawing.Color theamColor = GetColor(1919, 1079);
+                                            if (CalculateLight(theamColor) > 255 / 2)
+                                            {
+                                                //light
+                                                BGBorder.Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(theamColor.A, theamColor.R, theamColor.G, theamColor.B));
+                                                SecondsText.Foreground = Constants.lightFont;
+                                            }
+                                            else
+                                            {
+                                                // dark
+                                                //BGBorder.Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(theamColor.A, theamColor.R, theamColor.G, theamColor.B));
+                                                BGBorder.Background = Constants.darkBG;
+                                                SecondsText.Foreground = Constants.darkFont;
+                                            }
+
+                                            SecondsDataContext dc = this.DataContext as SecondsDataContext;
+                                            dc.Seconds = (DateTime.Now.Hour).ToString() + ":" +
+                                                FormatMS(DateTime.Now.Minute) + ":" +
+                                                FormatMS(DateTime.Now.Second);
+
+                                            int sx = (int)(SystemParameters.PrimaryScreenWidth * lProportion);
+                                            int sMarginBottom = (int)(SystemParameters.WorkArea.Height * tProportion);
+                                            Left = sx - Width;
+                                            Top = SystemParameters.WorkArea.Height - Height;
+                                            BGBorder.Visibility = Visibility.Visible;
+                                            timer.Start();
+                                        }
+                                        else
+                                        {
+                                            BGBorder.Visibility = Visibility.Collapsed;
+                                            timer.Stop();
+                                        }
+                                    }
+                                }
+                                catch (Exception e1) { }
+                            }));
+                        });
+                        waitThread.IsBackground = true;
+                        waitThread.Start();
                     }
                     else if (true)
                     {

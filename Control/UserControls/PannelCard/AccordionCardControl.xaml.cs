@@ -441,9 +441,12 @@ namespace GeekDesk.Control.UserControls.PannelCard
             {
                 if (!menu.IsExpanded)
                 {
-                    menu.IsExpanded = true;
-                    appData.AppConfig.SelectedMenuIndex = appData.MenuList.IndexOf(menu);
-                    appData.AppConfig.SelectedMenuIcons = menu.IconList;
+                    MainWindow.OpenMenuWithVerify(menu, () =>
+                    {
+                        menu.IsExpanded = true;
+                        appData.AppConfig.SelectedMenuIndex = appData.MenuList.IndexOf(menu);
+                        appData.AppConfig.SelectedMenuIcons = menu.IconList;
+                    });
                 }
             }
         }
@@ -452,7 +455,8 @@ namespace GeekDesk.Control.UserControls.PannelCard
         {
             if (sender is FrameworkElement element && element.Tag is MenuInfo menu)
             {
-                if (!menu.IsExpanded)
+                //加密分类不支持拖放自动展开 (避免绕过密码验证)
+                if (!menu.IsExpanded && !menu.IsEncrypt)
                 {
                     menu.IsExpanded = true;
                 }
@@ -504,6 +508,9 @@ namespace GeekDesk.Control.UserControls.PannelCard
                     menuInfo.IsExpanded = true;
                     CommonCode.SaveAppData(appData, Constants.DATA_FILE_PATH);
                     InitDrawerLayout();
+
+                    //注册文件监听 (立即生效, 无需重启)
+                    FileWatcher.LinkMenuWatcher(menuInfo);
 
                     new Thread(() =>
                     {
@@ -560,8 +567,7 @@ namespace GeekDesk.Control.UserControls.PannelCard
         {
             if (sender is MenuItem item && item.Tag is MenuInfo menu)
             {
-                menu.IsEncrypt = !menu.IsEncrypt;
-                CommonCode.SaveAppData(appData, Constants.DATA_FILE_PATH);
+                MainWindow.ToggleMenuEncrypt(menu);
             }
         }
 
@@ -574,6 +580,8 @@ namespace GeekDesk.Control.UserControls.PannelCard
                     HandyControl.Controls.Growl.WarningGlobal("至少保留一个分类!");
                     return;
                 }
+                //关联分类先释放文件监听
+                FileWatcher.RemoveLinkMenuWatcher(menu);
                 appData.MenuList.Remove(menu);
                 if (appData.MenuList.Count > 0)
                 {
@@ -602,7 +610,7 @@ namespace GeekDesk.Control.UserControls.PannelCard
         {
             if (sender is FrameworkElement element && element.Tag is IconInfo icon)
             {
-                icon.Count++;
+                //启动次数在 ProcessUtil.StartIconApp 内统一累加
                 ProcessUtil.StartIconApp(icon, IconStartType.DEFAULT_STARTUP);
                 if (appData.AppConfig.AppHideType == AppHideType.START_EXE)
                 {

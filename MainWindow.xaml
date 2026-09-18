@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:uc="clr-namespace:GeekDesk.Control.UserControls.PannelCard"
+        xmlns:ot="clr-namespace:GeekDesk.Control.Other"
         xmlns:cn="clr-namespace:GeekDesk.Constant"
         xmlns:xf="clr-namespace:XamlFlair;assembly=XamlFlair.WPF"
         xmlns:local="clr-namespace:GeekDesk"
@@ -257,6 +258,19 @@
 
                         <!-- 4. 顶层: 搜索结果层 (当输入搜索时展示) -->
                         <uc:RightCardControl x:Name="RightCard" Visibility="Collapsed" Margin="0,42,0,0"/>
+
+                        <!-- 5. 顶层: 分类密码验证弹框 (两种启动器模式通用) -->
+                        <ot:PasswordDialog x:Name="PDDialog"
+                                           Visibility="Collapsed"
+                                           Panel.ZIndex="99"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Top"
+                                           Margin="0,90,0,0"
+                                           IsVisibleChanged="PDDialog_IsVisibleChanged">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="14" Direction="-90" Color="#000000" Opacity="0.3" ShadowDepth="3"/>
+                            </Border.Effect>
+                        </ot:PasswordDialog>
                     </Grid>
 
                     <Border x:Name="SearchResContainer" Panel.ZIndex="2" 

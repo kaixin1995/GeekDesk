@@ -228,9 +228,22 @@ namespace GeekDesk.Control.Windows
             {
                 window2 = new ToDoInfoWindow(info);
             }
+            else
+            {
+                //窗口复用时刷新为最新待办内容
+                ((ToDoInfoWindow)window2).RefreshInfo(info);
+            }
             windowType = DETAIL_TODO;
             window2.Show();
             Keyboard.Focus(window2);
+        }
+
+        /// <summary>
+        /// 窗口复用时刷新显示的待办内容
+        /// </summary>
+        public void RefreshInfo(ToDoInfo info)
+        {
+            this.DataContext = info;
         }
 
         private void ExecType_Checked(object sender, RoutedEventArgs e)

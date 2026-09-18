@@ -16,6 +16,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -47,7 +48,6 @@ namespace GeekDesk
         public static int toDoHotKeyId = -1;
         public static int colorPickerHotKeyId = -1;
         public static MainWindow mainWindow;
-        public LeftCardControl LeftCard => null;
 
        
 
@@ -199,31 +199,41 @@ namespace GeekDesk
                     }
                     new Thread(() =>
                     {
-                        ObservableCollection<IconInfo> resList = new ObservableCollection<IconInfo>();
-
-                        // 纯净快捷方式/图标搜索 (基于名称和拼音首字母)
-                        ObservableCollection<MenuInfo> menuList = appData.MenuList;
-                        foreach (MenuInfo menu in menuList)
+                        try
                         {
-                            ObservableCollection<IconInfo> iconList = menu.IconList;
-                            foreach (IconInfo icon in iconList)
+                            ObservableCollection<IconInfo> resList = new ObservableCollection<IconInfo>();
+
+                            //快照避免搜索期间 UI 修改集合导致异常
+                            MenuInfo[] menuSnapshot = appData.MenuList.ToArray();
+
+                            // 纯净快捷方式/图标搜索 (基于名称和拼音首字母)
+                            foreach (MenuInfo menu in menuSnapshot)
                             {
-                                if (RunTimeStatus.EVERYTHING_NEW_SEARCH) return;
-                                string pyName = Pinyin.GetInitials(icon.Name).ToLower();
-                                if (icon.Name.ToLower().Contains(inputText) || pyName.Contains(inputText))
+                                IconInfo[] iconSnapshot = menu?.IconList?.ToArray();
+                                if (iconSnapshot == null) continue;
+                                foreach (IconInfo icon in iconSnapshot)
                                 {
-                                    resList.Add(icon);
+                                    if (RunTimeStatus.EVERYTHING_NEW_SEARCH) return;
+                                    string pyName = Pinyin.GetInitials(icon.Name).ToLower();
+                                    if (icon.Name.ToLower().Contains(inputText) || pyName.Contains(inputText))
+                                    {
+                                        resList.Add(icon);
+                                    }
                                 }
                             }
-                        }
 
-                        this.Dispatcher.Invoke(() =>
+                            this.Dispatcher.Invoke(() =>
+                            {
+                                SearchResControl control = new SearchResControl(resList);
+                                RightCard.VerticalCard.Content = control;
+                                //关闭加载效果
+                                RightCard.Loading_RightCard.Visibility = Visibility.Collapsed;
+                            });
+                        }
+                        catch (Exception ex)
                         {
-                            SearchResControl control = new SearchResControl(resList);
-                            RightCard.VerticalCard.Content = control;
-                            //关闭加载效果
-                            RightCard.Loading_RightCard.Visibility = Visibility.Collapsed;
-                        });
+                            LogUtil.WriteErrorLog(ex, "本地搜索异常!");
+                        }
                     }).Start();
 
                 });
@@ -617,7 +627,7 @@ namespace GeekDesk
             Keyboard.Focus(mainWindow);
             if (RunTimeStatus.SHOW_MENU_PASSWORDBOX)
             {
-                mainWindow.RightCard.PDDialog.SetFocus();
+                mainWindow.PDDialog.SetFocus();
             }
             else
             {
@@ -656,6 +666,89 @@ namespace GeekDesk
             //{
             //    ShowApp();
             //}
+        }
+
+        /// <summary>
+        /// 密码验证弹框显隐变更：置焦点并重置输入状态
+        /// </summary>
+        private void PDDialog_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (PDDialog.Visibility == Visibility.Visible)
+            {
+                RunTimeStatus.SHOW_MENU_PASSWORDBOX = true;
+                PDDialog.ClearVal();
+                PDDialog.HideErrorMsg();
+                PDDialog.count = 0;
+                PDDialog.SetFocus();
+            }
+            else
+            {
+                RunTimeStatus.SHOW_MENU_PASSWORDBOX = false;
+                PDDialog.ClearVal();
+            }
+        }
+
+        /// <summary>
+        /// 带密码验证的分类打开动作：加密且本次运行未验证过的分类需先输入密码
+        /// </summary>
+        /// <param name="menu">目标分类</param>
+        /// <param name="onOpen">验证通过(或无需验证)后执行</param>
+        /// <param name="onRefuse">用户放弃验证时执行(如回退到原分类)</param>
+        public static void OpenMenuWithVerify(MenuInfo menu, Action onOpen, Action onRefuse = null)
+        {
+            if (menu != null && menu.IsEncrypt
+                && !string.IsNullOrEmpty(appData.AppConfig.MenuPassword)
+                && !RunTimeStatus.UNLOCKED_MENU_IDS.Contains(menu.MenuId))
+            {
+                PasswordDialog pd = mainWindow.PDDialog;
+                pd.type = PasswordType.VERIFY;
+                pd.menuInfo = menu;
+                pd.VerifySuccess = () =>
+                {
+                    RunTimeStatus.UNLOCKED_MENU_IDS.Add(menu.MenuId);
+                    onOpen?.Invoke();
+                };
+                pd.VerifyRefuse = onRefuse;
+                pd.Visibility = Visibility.Visible;
+                return;
+            }
+            onOpen?.Invoke();
+        }
+
+        /// <summary>
+        /// 加密/解除加密分类：未设置过密码时先走创建密码流程，已加密的分类解除加密需先验证
+        /// </summary>
+        public static void ToggleMenuEncrypt(MenuInfo menu)
+        {
+            if (menu == null) return;
+            if (!menu.IsEncrypt)
+            {
+                if (string.IsNullOrEmpty(appData.AppConfig.MenuPassword))
+                {
+                    //首次加密：先创建密码 (DonePassword 完成后自动加密该分类)
+                    PasswordDialog pd = mainWindow.PDDialog;
+                    pd.type = PasswordType.CREATE;
+                    pd.menuInfo = menu;
+                    pd.count = 0;
+                    pd.ClearVal();
+                    pd.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    menu.IsEncrypt = true;
+                    RunTimeStatus.UNLOCKED_MENU_IDS.Add(menu.MenuId);
+                    HandyControl.Controls.Growl.SuccessGlobal(menu.MenuName + " 已加密!");
+                }
+            }
+            else
+            {
+                OpenMenuWithVerify(menu, () =>
+                {
+                    menu.IsEncrypt = false;
+                    RunTimeStatus.UNLOCKED_MENU_IDS.Remove(menu.MenuId);
+                    HandyControl.Controls.Growl.SuccessGlobal(menu.MenuName + " 已解除加密!");
+                });
+            }
         }
 
         /// <summary>
@@ -1121,10 +1214,17 @@ namespace GeekDesk
 
         public void OnKeyDown(object sender, KeyEventArgs e)
         {
-            //char c = (char)e.Key;
-
             if (e.Key == Key.Escape)
             {
+                //密码验证弹框显示时 Esc 优先关闭弹框
+                if (RunTimeStatus.SHOW_MENU_PASSWORDBOX)
+                {
+                    PDDialog.Visibility = Visibility.Collapsed;
+                    Action refuse = PDDialog.VerifyRefuse;
+                    PDDialog.VerifyRefuse = null;
+                    refuse?.Invoke();
+                    return;
+                }
                 HideApp();
             }
 
@@ -1134,19 +1234,18 @@ namespace GeekDesk
                 || e.Key == Key.Enter
                 ))
             {
+                SearchResControl res = RightCard.VerticalCard.Content as SearchResControl;
+                if (res == null) return;
                 if (e.Key == Key.Down || e.Key == Key.Tab)
                 {
-                    SearchResControl res = RightCard.VerticalCard.Content as SearchResControl;
                     res.SearchListBoxIndexAdd();
                 }
                 else if (e.Key == Key.Up)
                 {
-                    SearchResControl res = RightCard.VerticalCard.Content as SearchResControl;
                     res.SearchListBoxIndexSub();
                 }
                 else if (e.Key == Key.Enter)
                 {
-                    SearchResControl res = RightCard.VerticalCard.Content as SearchResControl;
                     res.StartupSelectionItem();
                 }
             }
@@ -1196,7 +1295,7 @@ namespace GeekDesk
                 if (RunTimeStatus.SHOW_MENU_PASSWORDBOX)
                 {
                     //必须在其它文本框没有工作的时候才给密码框焦点
-                    RightCard.PDDialog.SetFocus();
+                    PDDialog.SetFocus();
                 }
                 else
                 {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace GeekDesk.Constant
 {
@@ -85,6 +86,11 @@ namespace GeekDesk.Constant
         /// 控制主界面热键按下规定时间内只执行一次show hide
         /// </summary>
         public static volatile int MAIN_HOT_KEY_TIME = 300;
+
+        /// <summary>
+        /// 本次运行内已通过密码验证的加密分类ID (程序重启后需重新验证)
+        /// </summary>
+        public static readonly HashSet<string> UNLOCKED_MENU_IDS = new HashSet<string>();
 
     }
 }

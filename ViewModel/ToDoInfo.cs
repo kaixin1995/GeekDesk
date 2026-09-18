@@ -133,7 +133,8 @@ namespace GeekDesk.ViewModel
         private void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            CommonCode.SaveAppData(MainWindow.appData, Constants.DATA_FILE_PATH);
+            //防抖保存 避免每次属性变更都全量写盘
+            CommonCode.RequestSaveAppData();
         }
     }
 }

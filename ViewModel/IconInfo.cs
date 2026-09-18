@@ -225,11 +225,28 @@ namespace GeekDesk.ViewModel
         [JsonIgnore]
         public BitmapImage BitmapImage
         {
-            get => ImageUtil.ByteArrToImage(ImageByteArr);
+            get
+            {
+                //缓存解码结果 避免每次绑定求值都重新解码 byte[]
+                if (bitmapImage == null && imageByteArr != null && imageByteArr.Length > 0)
+                {
+                    bitmapImage = ImageUtil.ByteArrToImage(imageByteArr);
+                }
+                return bitmapImage;
+            }
             set
             {
-                bitmapImage = value;
-                ImageByteArr = ImageUtil.BitmapImageToByte(bitmapImage);
+                if (value == null)
+                {
+                    bitmapImage = null;
+                    imageByteArr = null;
+                }
+                else
+                {
+                    imageByteArr = ImageUtil.BitmapImageToByte(value);
+                    bitmapImage = value;
+                }
+                OnPropertyChanged("ImageByteArr");
                 OnPropertyChanged("BitmapImage");
             }
         }
@@ -237,11 +254,26 @@ namespace GeekDesk.ViewModel
         [JsonIgnore]
         public BitmapImage BitmapImage_NoWrite
         {
-            get => ImageUtil.ByteArrToImage(ImageByteArr_NoWrite);
+            get
+            {
+                if (bitmapImage == null && imageByteArr != null && imageByteArr.Length > 0)
+                {
+                    bitmapImage = ImageUtil.ByteArrToImage(imageByteArr);
+                }
+                return bitmapImage;
+            }
             set
             {
-                bitmapImage = value;
-                ImageByteArr_NoWrite = ImageUtil.BitmapImageToByte(bitmapImage);
+                if (value == null)
+                {
+                    bitmapImage = null;
+                    imageByteArr = null;
+                }
+                else
+                {
+                    imageByteArr = ImageUtil.BitmapImageToByte(value);
+                    bitmapImage = value;
+                }
                 OnPropertyChanged("BitmapImage_NoWrite");
             }
         }
@@ -252,6 +284,7 @@ namespace GeekDesk.ViewModel
             set
             {
                 imageByteArr = value;
+                bitmapImage = null; //图像字节变更时清除解码缓存
                 OnPropertyChanged("ImageByteArr");
             }
         }
@@ -260,7 +293,11 @@ namespace GeekDesk.ViewModel
         public byte[] ImageByteArr_NoWrite
         {
             get => imageByteArr;
-            set => imageByteArr = value;
+            set
+            {
+                imageByteArr = value;
+                bitmapImage = null; //图像字节变更时清除解码缓存
+            }
         }
 
         public string Content

@@ -163,7 +163,8 @@ namespace GeekDesk.Util
                 }
 
                 //启动后根据是否开启了使用次数排序判断是否执行一次排序
-                CommonCode.SortIconList(MainWindow.appData.AppConfig.IconSortType == (SortType.COUNT_LOW|SortType.COUNT_UP) ? true : false);
+                AppConfig cfg = MainWindow.appData.AppConfig;
+                CommonCode.SortIconList(cfg.IconSortType == SortType.COUNT_UP || cfg.IconSortType == SortType.COUNT_LOW);
             });
         }
 

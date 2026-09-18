@@ -33,7 +33,17 @@ namespace GeekDesk.Control.Other
                 DateTime nowTime = DateTime.Now;
 
                 //计算下次执行时间
-                DateTime nextTime = DateTime.SpecifyKind(exp.GetNextValidTimeAfter(nowTime).Value.LocalDateTime, DateTimeKind.Local);
+                DateTimeOffset? next = exp.GetNextValidTimeAfter(nowTime);
+                if (next == null)
+                {
+                    //无效 CRON 表达式 按普通待办归档
+                    appData.ToDoList.Remove(info);
+                    appData.HiToDoList.Add(info);
+                    CloseActiveNotification(info);
+                    CommonCode.SaveAppData(appData, Constants.DATA_FILE_PATH);
+                    return;
+                }
+                DateTime nextTime = DateTime.SpecifyKind(next.Value.LocalDateTime, DateTimeKind.Local);
 
                 string nextTimeStr = nextTime.ToString("yyyy-MM-dd HH:mm:ss");
                 info.ExeTime = nextTimeStr;
@@ -60,9 +70,20 @@ namespace GeekDesk.Control.Other
                 appData.ToDoList.Remove(info); //执行任务删除
                 appData.HiToDoList.Add(info);  //添加历史任务
             }
-            ToDoTask.activityBacklog[info].Close(); //关闭桌面通知
-            ToDoTask.activityBacklog.Remove(info);//激活任务删除
+            CloseActiveNotification(info);
             CommonCode.SaveAppData(appData, Constants.DATA_FILE_PATH);
+        }
+
+        /// <summary>
+        /// 关闭并清除该待办的活动提醒 (防重复点击/竞态导致的 KeyNotFound)
+        /// </summary>
+        private static void CloseActiveNotification(ToDoInfo info)
+        {
+            if (ToDoTask.activityBacklog.TryGetValue(info, out ToDoTask.BacklogReminder reminder))
+            {
+                reminder.Notification?.Close();
+                ToDoTask.activityBacklog.Remove(info);
+            }
         }
 
 
@@ -91,13 +112,8 @@ namespace GeekDesk.Control.Other
         /// <param name="e"></param>
         private void DelayTime_PreviewLostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
-            int textBoxInt;
-            //转化val为数字，如果不是数字则会抓取到报错信息
-            try
-            {
-                textBoxInt = int.Parse(DelayTime.Text.Trim());
-            }
-            catch (FormatException)
+            //非法输入重置为默认10分钟
+            if (!int.TryParse(DelayTime.Text.Trim(), out int val) || val < 1)
             {
                 DelayTime.Text = "10";
             }
@@ -111,7 +127,14 @@ namespace GeekDesk.Control.Other
         private void DelayButton_Click(object sender, RoutedEventArgs e)
         {
             ToDoInfo info = this.DataContext as ToDoInfo;
-            int time = int.Parse(DelayTime.Text);
+            if (!int.TryParse(DelayTime.Text.Trim(), out int time) || time < 1)
+            {
+                time = 10;
+            }
+            if (time > 999999)
+            {
+                time = 999999;
+            }
             string type = DelayType.Text;
             switch (type)
             {
@@ -124,8 +147,8 @@ namespace GeekDesk.Control.Other
                     Growl.SuccessGlobal("将在 " + time + " 小时后再次提醒您!");
                     break;
             }
-            ToDoTask.activityBacklog[info].Close(); //关闭桌面通知
-            ToDoTask.activityBacklog.Remove(info);//激活任务删除
+            CloseActiveNotification(info);
+            CommonCode.SaveAppData(appData, Constants.DATA_FILE_PATH);
         }
     }
 }

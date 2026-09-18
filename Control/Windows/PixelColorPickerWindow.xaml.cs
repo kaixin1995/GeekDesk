@@ -55,32 +55,14 @@ namespace GeekDesk.Control.Windows
 
             this.WindowState = WindowState.Normal;//还原窗口（非最小化和最大化）
 
-            var screens = Screen.AllScreens;
-            int allWidth = 0;
-            int allHeight = 0;
-            int x = 0;
-            int y = 0;
-
-           
-
-            foreach (var screen in screens)
-            {
-                var rect = screen.Bounds;
-                allWidth += rect.Width;
-                allHeight += rect.Height;
-                x = Math.Min(x, rect.X);
-                y = Math.Min(y, rect.Y);
-            }
+            //虚拟屏幕 (含所有显示器的包围区域, 正确处理负坐标多显示器)
+            this.Width = SystemParameters.VirtualScreenWidth;
+            this.Height = SystemParameters.VirtualScreenHeight;
+            this.Left = SystemParameters.VirtualScreenLeft;
+            this.Top = SystemParameters.VirtualScreenTop;
 
             //获取缩放比例
             double scale = ScreenUtil.GetScreenScalingFactor();
-        
-
-            this.Width = allWidth;
-            this.Height = allHeight;
-
-            this.Left = x;
-            this.Top = y;
 
             DesktopBG.Width = this.Width;
             DesktopBG.Height = this.Height;
@@ -92,28 +74,45 @@ namespace GeekDesk.Control.Windows
                     System.Drawing.Imaging.PixelFormat.Format32bppArgb
                 );
 
-            using (System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(bgBitmap))
+            try
             {
-                g.CopyFromScreen(
-                    (int)this.Left,
-                    (int)this.Top,
-                    0,
-                    0,
-                    bgBitmap.Size
-                    );
+                using (System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(bgBitmap))
+                {
+                    g.CopyFromScreen(
+                        (int)(this.Left * scale),
+                        (int)(this.Top * scale),
+                        0,
+                        0,
+                        bgBitmap.Size
+                        );
+                }
+                IntPtr hBitmap = bgBitmap.GetHbitmap();
+                try
+                {
+                    BitmapSource bs = Imaging.CreateBitmapSourceFromHBitmap(
+                                                 hBitmap,
+                                                IntPtr.Zero,
+                                                Int32Rect.Empty,
+                                                BitmapSizeOptions.FromEmptyOptions()
+                                            );
+                    DesktopBG.Source = bs;
+                }
+                finally
+                {
+                    //释放GDI位图句柄 防止泄漏
+                    DeleteObject(hBitmap);
+                }
             }
-            BitmapSource bs = Imaging.CreateBitmapSourceFromHBitmap(
-                                         bgBitmap.GetHbitmap(),
-                                        IntPtr.Zero,
-                                        Int32Rect.Empty,
-                                        BitmapSizeOptions.FromEmptyOptions()
-                                    );
-            DesktopBG.Source = bs;
+            finally
+            {
+                bgBitmap.Dispose();
+            }
+
             VisualBrush b = (VisualBrush)PixelBG.Fill;
             b.Visual = DesktopBG;
             Mouse.OverrideCursor = Cursors.Cross;
 
-            
+
         }
 
 
@@ -133,6 +132,8 @@ namespace GeekDesk.Control.Windows
         {
             if (e.Key == Key.Escape)
             {
+                //恢复系统光标 (否则关闭后全局保持十字光标)
+                Mouse.OverrideCursor = null;
                 this.DataContext = null;
                 this.Close();
             }
@@ -227,7 +228,10 @@ namespace GeekDesk.Control.Windows
 
             System.Drawing.Color dColor = System.Drawing.Color.FromArgb(wColor.A, wColor.R, wColor.G, wColor.B);
 
-            PixelColor_HTML.Text = "#" + dColor.Name.ToUpper().Substring(2);
+            //已知色名 (如 Black) 不是十六进制, 不能截断; 未知颜色 Name 为 AARRGGBB 十六进制, 截掉 AA 两位
+            PixelColor_HTML.Text = dColor.IsKnownColor
+                ? "#" + dColor.Name.ToUpper()
+                : "#" + dColor.Name.ToUpper().Substring(2);
             PixelColor_RGB.Text = dColor.R + "," + dColor.G + "," + dColor.B;
             Pixel_XY.Text = (int)pos.X + "*" + (int)pos.Y;
 
@@ -238,18 +242,15 @@ namespace GeekDesk.Control.Windows
 
         private Color GetColorAtPosition(Point position)
         {
+            //边缘位置钳制 防止裁剪区域越界抛异常
+            int px = Math.Max(0, Math.Min((int)position.X, (int)renderTargetBitmap.Width - 1));
+            int py = Math.Max(0, Math.Min((int)position.Y, (int)renderTargetBitmap.Height - 1));
             // 使用CroppedBitmap裁剪出鼠标位置的一个像素
-            CroppedBitmap croppedBitmap = new CroppedBitmap(renderTargetBitmap, new Int32Rect((int)position.X, (int)position.Y, 1, 1));
+            CroppedBitmap croppedBitmap = new CroppedBitmap(renderTargetBitmap, new Int32Rect(px, py, 1, 1));
             // 将像素数据复制到数组中
             byte[] pixels = new byte[4];
             croppedBitmap.CopyPixels(pixels, 4, 0);
-            // 如果像素数据有效，则返回颜色
-            //if (pixels.Length == 4)
-            //{
-                
-            //}
             return Color.FromArgb(pixels[3], pixels[2], pixels[1], pixels[0]);
-            //return Color.FromArgb(0, 0, 0, 0);
         }
 
 

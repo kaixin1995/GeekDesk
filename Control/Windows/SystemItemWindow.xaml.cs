@@ -28,6 +28,8 @@ namespace GeekDesk.Control.Windows
         private List<IconInfo> systemIcons;
         private List<IconInfo> startMenuIcons;
         private List<IconInfo> storeIcons;
+        /// <summary>开始菜单扫描进行中标志 (防止重复启动扫描线程)</summary>
+        private volatile bool startMenuScaning;
 
         private SystemItemWindow()
         {
@@ -76,11 +78,25 @@ namespace GeekDesk.Control.Windows
                     if (startMenuIcons == null)
                     {
                         vm.IconInfos = null;
-                        System.Threading.Thread t = new System.Threading.Thread(new ThreadStart(GetStartMenuInfos))
+                        if (!startMenuScaning)
                         {
-                            IsBackground = true
-                        };
-                        t.Start();
+                            startMenuScaning = true;
+                            System.Threading.Thread t = new System.Threading.Thread(new ThreadStart(() =>
+                            {
+                                try
+                                {
+                                    GetStartMenuInfos();
+                                }
+                                finally
+                                {
+                                    startMenuScaning = false;
+                                }
+                            }))
+                            {
+                                IsBackground = true
+                            };
+                            t.Start();
+                        }
                     }
                     else
                     {
@@ -126,20 +142,31 @@ namespace GeekDesk.Control.Windows
                 StartMenuLoading.Visibility = Visibility.Visible;
             }));
 
-            List<IconInfo> infos = new List<IconInfo>();
-            //获取开始菜单路径
-            string path = Environment.GetFolderPath(Environment.SpecialFolder.StartMenu) + "\\Programs";
-            //递归获取信息
-            GetInfos(path, infos);
-            App.Current.Dispatcher.Invoke((Action)(() =>
+            try
             {
-                if (StartMenu.IsSelected)
+                List<IconInfo> infos = new List<IconInfo>();
+                //获取开始菜单路径
+                string path = Environment.GetFolderPath(Environment.SpecialFolder.StartMenu) + "\\Programs";
+                //递归获取信息
+                GetInfos(path, infos);
+                App.Current.Dispatcher.Invoke((Action)(() =>
                 {
-                    startMenuIcons = infos;
-                    vm.IconInfos = startMenuIcons;
-                }
-                StartMenuLoading.Visibility = Visibility.Collapsed;
-            }));
+                    if (StartMenu.IsSelected)
+                    {
+                        startMenuIcons = infos;
+                        vm.IconInfos = startMenuIcons;
+                    }
+                    StartMenuLoading.Visibility = Visibility.Collapsed;
+                }));
+            }
+            catch (Exception ex)
+            {
+                LogUtil.WriteErrorLog(ex, "扫描开始菜单项目异常!");
+                App.Current.Dispatcher.Invoke((Action)(() =>
+                {
+                    StartMenuLoading.Visibility = Visibility.Collapsed;
+                }));
+            }
 
         }
 
@@ -150,52 +177,41 @@ namespace GeekDesk.Control.Windows
         /// <param name="listInfos"></param>
         private void GetInfos(string filePath, List<IconInfo> listInfos)
         {
-            DirectoryInfo di = new DirectoryInfo(filePath);
-            string[] filePaths = Directory.GetFiles(filePath);
-            string[] dirPaths = Directory.GetDirectories(filePath);
-
-            string[] paths = new string[filePaths.Length + dirPaths.Length];
-            filePaths.CopyTo(paths, 0);
-            if (filePaths == null || filePaths.Length == 0)
+            string[] filePaths;
+            string[] dirPaths;
+            try
             {
-                dirPaths.CopyTo(paths, 0);
+                filePaths = Directory.GetFiles(filePath);
+                dirPaths = Directory.GetDirectories(filePath);
             }
-            else
+            catch (Exception)
             {
-                dirPaths.CopyTo(paths, filePaths.Length - 1);
+                //无权限访问的目录直接跳过
+                return;
             }
 
-            foreach (string path in paths)
+            foreach (string path in filePaths)
             {
-                if (File.Exists(path))
+                string ext = Path.GetExtension(path).ToLower();
+                if (".exe".Equals(ext) || ".lnk".Equals(ext))
                 {
-                    string ext = Path.GetExtension(path).ToLower();
-                    if (".exe".Equals(ext) || ".lnk".Equals(ext))
+                    try
                     {
-                        try
+                        IconInfo iconInfo = CommonCode.GetIconInfoByPath_NoWrite(path);
+                        if (iconInfo.Path_NoWrite != null)
                         {
-                            IconInfo iconInfo = CommonCode.GetIconInfoByPath_NoWrite(path);
-                            if (iconInfo.Path_NoWrite != null)
-                            {
-                                iconInfo.Content_NoWrite = iconInfo.Path_NoWrite + "\n" + iconInfo.Name_NoWrite;
-                                listInfos.Add(iconInfo);
-                            }
+                            iconInfo.Content_NoWrite = iconInfo.Path_NoWrite + "\n" + iconInfo.Name_NoWrite;
+                            listInfos.Add(iconInfo);
                         }
-                        catch (Exception) { }
                     }
-                }
-                else if (Directory.Exists(path))
-                {
-                    GetInfos(path, listInfos);
+                    catch (Exception) { }
                 }
             }
 
-            //FileSystemInfo[] fileInfoArr = di.GetFileSystemInfos();
-            //foreach(FileSystemInfo fi in fileInfoArr)
-            //{
-            //    string path = fi.FullName;
-
-            //}
+            foreach (string path in dirPaths)
+            {
+                GetInfos(path, listInfos);
+            }
         }
 
         /// <summary>

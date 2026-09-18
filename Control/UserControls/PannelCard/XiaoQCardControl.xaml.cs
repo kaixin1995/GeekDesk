@@ -6,6 +6,7 @@ using GeekDesk.ViewModel;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,6 +18,9 @@ namespace GeekDesk.Control.UserControls.PannelCard
     public partial class XiaoQCardControl : UserControl
     {
         private AppData appData => MainWindow.appData;
+
+        /// <summary>当前已切换到的分类 (用于加密验证被拒时回退选中项)</summary>
+        private MenuInfo currentMenu;
 
         public XiaoQCardControl()
         {
@@ -30,8 +34,8 @@ namespace GeekDesk.Control.UserControls.PannelCard
                     {
                         index = 0;
                     }
+                    //选中后由 SelectionChanged 触发切换 (加密分类会先走密码验证)
                     CategoryListBox.SelectedIndex = index;
-                    SwitchCategory(appData.MenuList[index]);
                 }
             };
         }
@@ -39,6 +43,7 @@ namespace GeekDesk.Control.UserControls.PannelCard
         public void SwitchCategory(MenuInfo menu)
         {
             if (menu == null) return;
+            currentMenu = menu;
             IconGridListBox.ItemsSource = menu.IconList;
             appData.AppConfig.SelectedMenuIcons = menu.IconList;
             appData.AppConfig.SelectedMenuIndex = appData.MenuList.IndexOf(menu);
@@ -98,7 +103,22 @@ namespace GeekDesk.Control.UserControls.PannelCard
         {
             if (CategoryListBox.SelectedItem is MenuInfo menu)
             {
-                SwitchCategory(menu);
+                MainWindow.OpenMenuWithVerify(menu,
+                    () => SwitchCategory(menu),
+                    () =>
+                    {
+                        //放弃验证：回退到之前选中的分类 (无历史选中时回退到首个未加密分类)
+                        MenuInfo fallback = currentMenu;
+                        if (fallback == null)
+                        {
+                            fallback = appData.MenuList.FirstOrDefault(m => !m.IsEncrypt)
+                                ?? appData.MenuList.FirstOrDefault();
+                        }
+                        if (fallback != null)
+                        {
+                            CategoryListBox.SelectedItem = fallback;
+                        }
+                    });
             }
         }
 
@@ -149,8 +169,7 @@ namespace GeekDesk.Control.UserControls.PannelCard
         {
             if (sender is MenuItem item && item.Tag is MenuInfo menu)
             {
-                menu.IsEncrypt = !menu.IsEncrypt;
-                CommonCode.SaveAppData(appData, Constants.DATA_FILE_PATH);
+                MainWindow.ToggleMenuEncrypt(menu);
             }
         }
 
@@ -163,6 +182,8 @@ namespace GeekDesk.Control.UserControls.PannelCard
                     HandyControl.Controls.Growl.WarningGlobal("至少保留一个分类!");
                     return;
                 }
+                //关联分类先释放文件监听
+                FileWatcher.RemoveLinkMenuWatcher(menu);
                 int oldIndex = appData.MenuList.IndexOf(menu);
                 appData.MenuList.Remove(menu);
                 int newIndex = Math.Max(0, oldIndex - 1);
@@ -193,7 +214,7 @@ namespace GeekDesk.Control.UserControls.PannelCard
         {
             if (sender is FrameworkElement element && element.Tag is IconInfo icon)
             {
-                icon.Count++;
+                //启动次数在 ProcessUtil.StartIconApp 内统一累加
                 ProcessUtil.StartIconApp(icon, IconStartType.DEFAULT_STARTUP);
                 if (appData.AppConfig.AppHideType == AppHideType.START_EXE)
                 {

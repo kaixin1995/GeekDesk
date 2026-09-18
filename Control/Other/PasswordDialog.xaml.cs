@@ -24,6 +24,17 @@ namespace GeekDesk.Control.Other
         public int count = 0;
         private string tempPassword = null;
         private PasswordType tempType;
+
+        /// <summary>
+        /// 验证模式 (VERIFY) 密码正确后的回调
+        /// </summary>
+        public Action VerifySuccess;
+
+        /// <summary>
+        /// 验证模式用户按 Esc 放弃时的回调
+        /// </summary>
+        public Action VerifyRefuse;
+
         public PasswordDialog()
         {
             InitializeComponent();
@@ -79,23 +90,26 @@ namespace GeekDesk.Control.Other
                     + P3.Password
                     + P4.Password;
                 pw = MD5Util.CreateMD5(pw);
-                if (type == PasswordType.INPUT || type == PasswordType.CANCEL)
+                if (type == PasswordType.INPUT || type == PasswordType.VERIFY || type == PasswordType.CANCEL)
                 {
                     if (pw.Equals(appData.AppConfig.MenuPassword))
                     {
                         //隐藏弹框
-                        MainWindow.mainWindow.RightCard.PDDialog.Visibility = Visibility.Collapsed;
-                        //赋值
-                        MainWindow.appData.AppConfig.SelectedMenuIcons
-                            = appData.MenuList[
-                                MainWindow.mainWindow.LeftCard.MenuListBox.SelectedIndex
-                                ].IconList;
-                        //显示数据托盘
-                        MainWindow.mainWindow.RightCard.WrapUFG.Visibility = Visibility.Visible;
-                        //取消加密操作
+                        MainWindow.mainWindow.PDDialog.Visibility = Visibility.Collapsed;
                         if (type == PasswordType.CANCEL)
                         {
-                            menuInfo.IsEncrypt = false;
+                            //取消加密操作
+                            if (menuInfo != null)
+                            {
+                                menuInfo.IsEncrypt = false;
+                                RunTimeStatus.UNLOCKED_MENU_IDS.Remove(menuInfo.MenuId);
+                                HandyControl.Controls.Growl.SuccessGlobal(menuInfo.MenuName + " 已解除加密!");
+                            }
+                        }
+                        else
+                        {
+                            //验证通过 (VERIFY / INPUT)
+                            VerifySuccess?.Invoke();
                         }
                     } else
                     {
@@ -230,7 +244,7 @@ namespace GeekDesk.Control.Other
         {
             appData.AppConfig.MenuPassword = tempPassword;
             CommonCode.SavePassword(tempPassword);
-            MainWindow.mainWindow.RightCard.PDDialog.Visibility = Visibility.Collapsed;
+            MainWindow.mainWindow.PDDialog.Visibility = Visibility.Collapsed;
             PasswordGrid.Visibility = Visibility.Visible;
             HintGrid.Visibility = Visibility.Collapsed;
             if (tempType == PasswordType.ALTER)
@@ -238,10 +252,23 @@ namespace GeekDesk.Control.Other
                 HandyControl.Controls.Growl.SuccessGlobal("密码修改成功!");
             } else
             {
-                menuInfo.IsEncrypt = true;
-                HandyControl.Controls.Growl.SuccessGlobal(menuInfo.MenuName + " 已加密!");
+                if (menuInfo != null)
+                {
+                    menuInfo.IsEncrypt = true;
+                    RunTimeStatus.UNLOCKED_MENU_IDS.Add(menuInfo.MenuId);
+                    HandyControl.Controls.Growl.SuccessGlobal(menuInfo.MenuName + " 已加密!");
+                }
             }
 
+        }
+
+        /// <summary>
+        /// 显示验证弹框前重置错误与提示信息
+        /// </summary>
+        public void HideErrorMsg()
+        {
+            ErrorMsg.Visibility = Visibility.Hidden;
+            HintMsg.Visibility = Visibility.Hidden;
         }
 
         private void PasswordBox_KeyDown(object sender, KeyEventArgs e)

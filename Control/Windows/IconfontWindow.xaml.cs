@@ -136,6 +136,11 @@ namespace GeekDesk.Control.Windows
             {
                 window = new IconfontWindow(listInfo, menuInfo);
             }
+            else
+            {
+                //窗口复用时同步目标分类, 避免图标写入到上一次打开的分类
+                IconfontWindow.menuInfo = menuInfo;
+            }
             window.Show();
             Keyboard.Focus(window);
             ShowWindowFollowMouse.Show(window, MousePosition.LEFT_CENTER, 0, 0);
@@ -163,21 +168,39 @@ namespace GeekDesk.Control.Windows
 
         private void LoadingOnlineIcon()
         {
-            try
+            //网络请求移到后台线程, 避免UI线程冻结
+            LoadingEle.Visibility = Visibility.Visible;
+            CustomIcon.Visibility = Visibility.Collapsed;
+            string iconUrl = appConfig.CustomIconUrl;
+            string jsonUrl = appConfig.CustomIconJsonUrl;
+            new System.Threading.Thread(() =>
             {
-                string svgJsStr = HttpUtil.Get(appConfig.CustomIconUrl);
-                string jsonStr = HttpUtil.Get(appConfig.CustomIconJsonUrl);
-                List<IconfontInfo> icons = SvgToGeometry.GetIconfonts(svgJsStr, jsonStr);
-                customIcons = icons;
-                vm.Iconfonts = customIcons;
-                LoadingEle.Visibility = Visibility.Collapsed;
-                CustomIcon.Visibility = Visibility.Visible;
-            }
-            catch (Exception e)
+                try
+                {
+                    string svgJsStr = HttpUtil.Get(iconUrl);
+                    string jsonStr = HttpUtil.Get(jsonUrl);
+                    List<IconfontInfo> icons = SvgToGeometry.GetIconfonts(svgJsStr, jsonStr);
+                    customIcons = icons;
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        vm.Iconfonts = customIcons;
+                        LoadingEle.Visibility = Visibility.Collapsed;
+                        CustomIcon.Visibility = Visibility.Visible;
+                    });
+                }
+                catch (Exception e)
+                {
+                    LogUtil.WriteErrorLog(e, "加载远程图标异常!");
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        LoadingEle.Visibility = Visibility.Collapsed;
+                        HandyControl.Controls.Growl.WarningGlobal("加载远程图标异常!");
+                    });
+                }
+            })
             {
-                HandyControl.Controls.Growl.WarningGlobal("加载远程图标异常!");
-                LogUtil.WriteErrorLog(e, "加载远程图标异常!");
-            }
+                IsBackground = true
+            }.Start();
         }
 
         public void OnKeyDown(object sender, KeyEventArgs e)

@@ -16,15 +16,21 @@ namespace GeekDesk.Control.Other
     {
         public HandyControl.Controls.Dialog dialog;
 
+        /// <summary>与 DataContext 中深拷贝副本一一对应的原实例列表</summary>
+        private readonly ObservableCollection<GradientBGParam> originalArr = new ObservableCollection<GradientBGParam>();
+
         public GradientBGDialog()
         {
-            ObservableCollection<GradientBGParam> bgArr = DeepCopyUtil.DeepCopy(GradientBGParamList.GradientBGParams);
+            foreach(var bg in GradientBGParamList.GradientBGParams)
+            {
+                originalArr.Add(bg);
+            }
             foreach(var bg in MainWindow.appData.AppConfig.CustomBGParams)
             {
-                bgArr.Add(bg);
+                originalArr.Add(bg);
             }
 
-            this.DataContext = DeepCopyUtil.DeepCopy(bgArr);
+            this.DataContext = DeepCopyUtil.DeepCopy(originalArr);
             InitializeComponent();
         }
 
@@ -36,7 +42,11 @@ namespace GeekDesk.Control.Other
         private void BGBorder_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             GradientBGParam bgParam = (sender as Border).Tag as GradientBGParam;
-            MainWindow.appData.AppConfig.GradientBGParam = bgParam;
+            //解析为原实例 (DataContext 中是深拷贝副本), 保证后续改色作用于真实预设
+            ObservableCollection<GradientBGParam> copies = (ObservableCollection<GradientBGParam>)this.DataContext;
+            int idx = copies.IndexOf(bgParam);
+            GradientBGParam original = (idx >= 0 && idx < originalArr.Count) ? originalArr[idx] : bgParam;
+            MainWindow.appData.AppConfig.GradientBGParam = original;
             BGSettingUtil.BGSetting();
         }
 

@@ -76,10 +76,17 @@ namespace GeekDesk.Util
             else
             {
                 ip = GetJumboIcon(GetIconIndex(filePath));
-                ico = Icon.FromHandle(ip);
-                if (CheckIsSmallIco(ico.ToBitmap()))
+                if (ip == IntPtr.Zero)
                 {
                     ico = Icon.ExtractAssociatedIcon(filePath);
+                }
+                else
+                {
+                    ico = Icon.FromHandle(ip);
+                    if (CheckIsSmallIco(ico.ToBitmap()))
+                    {
+                        ico = Icon.ExtractAssociatedIcon(filePath);
+                    }
                 }
             }
 
@@ -107,6 +114,14 @@ namespace GeekDesk.Util
                 if (ip != IntPtr.Zero)
                 {
                     Shell32.DestroyIcon(ip);
+                }
+                //销毁 PrivateExtractIcons 提取的其余全部图标句柄, 防止GDI句柄泄漏
+                for (int i = 1; i < successCount; i++)
+                {
+                    if (hIcons[i] != IntPtr.Zero)
+                    {
+                        Shell32.DestroyIcon(hIcons[i]);
+                    }
                 }
                 bmp.Dispose();
                 if (ico != null) ico.Dispose();
@@ -171,6 +186,11 @@ namespace GeekDesk.Util
             Guid guil = new Guid(IID_IImageList);//or IID_IImageList
 
             Shell32.SHGetImageList(Shell32.SHIL_JUMBO, ref guil, ref spiml);
+            if (spiml == null)
+            {
+                //系统图像列表获取失败 (极少数环境)
+                return IntPtr.Zero;
+            }
             IntPtr hIcon = IntPtr.Zero;
             spiml.GetIcon(iImage, Shell32.ILD_TRANSPARENT | Shell32.ILD_IMAGE, ref hIcon);
 

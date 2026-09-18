@@ -584,28 +584,6 @@ namespace GeekDesk.Control.UserControls.PannelCard
             }
         }
 
-        
-
-        private void PDDialog_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            if (PDDialog.Visibility == Visibility.Visible)
-            {
-                RunTimeStatus.SHOW_MENU_PASSWORDBOX = true;
-                PDDialog.ClearVal();
-                PDDialog.ErrorMsg.Visibility = Visibility.Collapsed;
-                PDDialog.PasswordGrid.Visibility = Visibility.Visible;
-                PDDialog.HintGrid.Visibility = Visibility.Collapsed;
-                PDDialog.count = 0;
-                PDDialog.SetFocus();
-            }
-            else
-            {
-                RunTimeStatus.SHOW_MENU_PASSWORDBOX = false;
-                PDDialog.ClearVal();
-                MainWindow.mainWindow.Focus();
-            }
-        }
-
         /// <summary>
         /// 菜单结果icon 列表鼠标滚轮预处理时间  
         /// 主要使用自定义popup解决卡顿问题解决卡顿问题
@@ -644,54 +622,6 @@ namespace GeekDesk.Control.UserControls.PannelCard
                     RunTimeStatus.ICONLIST_MOUSE_WHEEL = false;
                 }).Start();
             }
-
-            //修改菜单时不切换菜单
-            if (RunTimeStatus.IS_MENU_EDIT) return;
-
-
-            //切换菜单
-            System.Windows.Controls.ScrollViewer scrollViewer = sender as System.Windows.Controls.ScrollViewer;
-            if (scrollViewer == null)
-            {
-                //在card 上获取的事件
-                scrollViewer = ScrollUtil.FindSimpleVisualChild<System.Windows.Controls.ScrollViewer>(IconListBox);
-            }
-            if (e.Delta < 0)
-            {
-                int index = MainWindow.mainWindow.LeftCard.MenuListBox.SelectedIndex;
-                if (ScrollUtil.IsBootomScrollView(scrollViewer))
-                {
-                    if (index < MainWindow.mainWindow.LeftCard.MenuListBox.Items.Count - 1)
-                    {
-                        index++;
-                    }
-                    else
-                    {
-                        index = 0;
-                    }
-                    MainWindow.mainWindow.LeftCard.MenuListBox.SelectedIndex = index;
-                    scrollViewer.ScrollToVerticalOffset(0);
-                }
-            }
-            else if (e.Delta > 0)
-            {
-                if (ScrollUtil.IsTopScrollView(scrollViewer))
-                {
-                    int index = MainWindow.mainWindow.LeftCard.MenuListBox.SelectedIndex;
-                    if (index > 0)
-                    {
-                        index--;
-                    }
-                    else
-                    {
-                        index = MainWindow.mainWindow.LeftCard.MenuListBox.Items.Count - 1;
-                    }
-                    MainWindow.mainWindow.LeftCard.MenuListBox.SelectedIndex = index;
-                    scrollViewer.ScrollToVerticalOffset(0);
-                }
-            }
-
-
         }
 
         /// <summary>
