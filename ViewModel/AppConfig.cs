@@ -108,6 +108,64 @@ namespace GeekDesk.ViewModel
         private LauncherStyle launcherStyle = LauncherStyle.XiaoQDesk; //启动器风格 (默认支持小Q书桌模式)
         private VisualTheme visualTheme = VisualTheme.MacAcrylic; //视觉主题 (默认苹果磨砂灰)
 
+        //窗口尺寸按启动器风格分别记忆
+        private double xiaoQWindowWidth = 620;
+        private double xiaoQWindowHeight = 440;
+        private double sonicWindowWidth = 320;
+        private double sonicWindowHeight = 560;
+
+        /// <summary>
+        /// 小Q书桌模式窗口宽度
+        /// </summary>
+        public double XiaoQWindowWidth
+        {
+            get => xiaoQWindowWidth;
+            set
+            {
+                xiaoQWindowWidth = value;
+                OnPropertyChanged("XiaoQWindowWidth");
+            }
+        }
+
+        /// <summary>
+        /// 小Q书桌模式窗口高度
+        /// </summary>
+        public double XiaoQWindowHeight
+        {
+            get => xiaoQWindowHeight;
+            set
+            {
+                xiaoQWindowHeight = value;
+                OnPropertyChanged("XiaoQWindowHeight");
+            }
+        }
+
+        /// <summary>
+        /// 音速抽屉模式窗口宽度
+        /// </summary>
+        public double SonicWindowWidth
+        {
+            get => sonicWindowWidth;
+            set
+            {
+                sonicWindowWidth = value;
+                OnPropertyChanged("SonicWindowWidth");
+            }
+        }
+
+        /// <summary>
+        /// 音速抽屉模式窗口高度
+        /// </summary>
+        public double SonicWindowHeight
+        {
+            get => sonicWindowHeight;
+            set
+            {
+                sonicWindowHeight = value;
+                OnPropertyChanged("SonicWindowHeight");
+            }
+        }
+
         public VisualTheme VisualTheme
         {
             get => visualTheme;

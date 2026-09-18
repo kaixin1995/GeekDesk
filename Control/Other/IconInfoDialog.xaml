@@ -6,7 +6,7 @@
         Title="图标属性编辑"
         Width="380"
         SizeToContent="Height"
-        WindowStartupLocation="CenterScreen"
+        WindowStartupLocation="CenterOwner"
         WindowStyle="None"
         ResizeMode="NoResize"
         AllowsTransparency="True"

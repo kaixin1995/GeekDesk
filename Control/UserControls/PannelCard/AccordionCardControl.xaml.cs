@@ -230,6 +230,8 @@ namespace GeekDesk.Control.UserControls.PannelCard
                     else
                     {
                         headerBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#D4D4D8"));
+                        //浅灰hover底上原浅灰文字不可读, hover 时切换为深色文字
+                        nameBlock.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#111827"));
                     }
                 }
             };
@@ -377,13 +379,24 @@ namespace GeekDesk.Control.UserControls.PannelCard
             Style itemStyle = new Style(typeof(ListBoxItem));
             itemStyle.Setters.Add(new Setter(FrameworkElement.FocusVisualStyleProperty, null));
             itemStyle.Setters.Add(new Setter(FrameworkElement.ContextMenuProperty, (ContextMenu)this.Resources["IconContextMenu"]));
-            
+
             FrameworkElementFactory borderFactory = new FrameworkElementFactory(typeof(Border));
+            borderFactory.Name = "ItemBorder";
             borderFactory.SetValue(Border.BackgroundProperty, Brushes.Transparent);
+            borderFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(6));
             FrameworkElementFactory presenterFactory = new FrameworkElementFactory(typeof(ContentPresenter));
             borderFactory.AppendChild(presenterFactory);
             ControlTemplate itemTemplate = new ControlTemplate(typeof(ListBoxItem));
             itemTemplate.VisualTree = borderFactory;
+            //图标悬停高亮反馈 (半透明灰, 明暗主题通用)
+            Trigger hoverTrigger = new Trigger
+            {
+                Property = UIElement.IsMouseOverProperty,
+                Value = true
+            };
+            hoverTrigger.Setters.Add(new Setter(Border.BackgroundProperty,
+                new SolidColorBrush((Color)ColorConverter.ConvertFromString("#22949CB0")), "ItemBorder"));
+            itemTemplate.Triggers.Add(hoverTrigger);
             itemStyle.Setters.Add(new Setter(System.Windows.Controls.Control.TemplateProperty, itemTemplate));
             iconListBox.ItemContainerStyle = itemStyle;
 

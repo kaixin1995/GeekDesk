@@ -61,7 +61,7 @@ namespace GeekDesk.Control.UserControls.PannelCard
                     BottomAddBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#252B35"));
                     BottomAddBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2D3440"));
 
-                    SetThemeBrushes("#0A84FF", "#2E3644", "#D1D5DB", "#FFFFFF", "#E2E8F0", "#9CA3AF");
+                    SetThemeBrushes("#0A84FF", "#2E3644", "#D1D5DB", "#FFFFFF", "#9CA3AF");
                     break;
 
                 case VisualTheme.PureMinimal:
@@ -72,7 +72,7 @@ namespace GeekDesk.Control.UserControls.PannelCard
                     BottomAddBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F1F5F9"));
                     BottomAddBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E2E8F0"));
 
-                    SetThemeBrushes("#0F172A", "#E2E8F0", "#334155", "#FFFFFF", "#1E293B", "#64748B");
+                    SetThemeBrushes("#0F172A", "#E2E8F0", "#334155", "#FFFFFF", "#64748B");
                     break;
 
                 case VisualTheme.CrystalSkeuomorphic:
@@ -84,18 +84,17 @@ namespace GeekDesk.Control.UserControls.PannelCard
                     BottomAddBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#D6DFE7"));
                     BottomAddBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#B8C5D0"));
 
-                    SetThemeBrushes("#2B579A", "#CBD8E2", "#2D3748", "#FFFFFF", "#1A202C", "#475569");
+                    SetThemeBrushes("#2B579A", "#CBD8E2", "#2D3748", "#FFFFFF", "#475569");
                     break;
             }
         }
 
-        private void SetThemeBrushes(string selectedNav, string hoverNav, string navText, string navSelectedText, string iconText, string addText)
+        private void SetThemeBrushes(string selectedNav, string hoverNav, string navText, string navSelectedText, string addText)
         {
             this.Resources["NavItemSelectedBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(selectedNav));
             this.Resources["NavItemHoverBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(hoverNav));
             this.Resources["NavTextBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(navText));
             this.Resources["NavSelectedTextBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(navSelectedText));
-            this.Resources["IconTextBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(iconText));
             this.Resources["AddMenuTextBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(addText));
         }
 

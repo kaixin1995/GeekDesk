@@ -114,6 +114,9 @@ namespace GeekDesk
         {
             RunTimeStatus.SEARCH_BOX_SHOW = true;
             SearchBarRow.Visibility = Visibility.Visible;
+            //内容区下移, 避免搜索条遮挡第一行分类/图标
+            AccordionCard.Margin = new Thickness(0, 42, 0, 0);
+            XiaoQCard.Margin = new Thickness(0, 42, 0, 0);
             SearchBox.Focus();
         }
         /// <summary>
@@ -121,6 +124,23 @@ namespace GeekDesk
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
+        /// <summary>
+        /// 根据当前启动器风格恢复内容区卡片可见性 (搜索框收起/清空后调用)
+        /// </summary>
+        public void RestoreCardContentVisibility()
+        {
+            if (appData.AppConfig.LauncherStyle == LauncherStyle.XiaoQDesk)
+            {
+                AccordionCard.Visibility = Visibility.Collapsed;
+                XiaoQCard.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                AccordionCard.Visibility = Visibility.Visible;
+                XiaoQCard.Visibility = Visibility.Collapsed;
+            }
+        }
+
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             RunTimeStatus.SEARCH_BOX_SHOW = true;
@@ -164,9 +184,9 @@ namespace GeekDesk
                 }
                 RightCard.Loading_RightCard.Visibility = Visibility.Collapsed;
                 RightCard.Visibility = Visibility.Collapsed;
-                AccordionCard.Visibility = Visibility.Visible;
+                RestoreCardContentVisibility();
             }
-            
+
         }
 
         private void SearchDelay()
@@ -189,13 +209,14 @@ namespace GeekDesk
                     {
                         RightCard.Loading_RightCard.Visibility = Visibility.Collapsed;
                         RightCard.Visibility = Visibility.Collapsed;
-                        AccordionCard.Visibility = Visibility.Visible;
+                        RestoreCardContentVisibility();
                         return;
                     }
                     else
                     {
                         RightCard.Visibility = Visibility.Visible;
                         AccordionCard.Visibility = Visibility.Collapsed;
+                        XiaoQCard.Visibility = Visibility.Collapsed;
                     }
                     new Thread(() =>
                     {
@@ -265,6 +286,9 @@ namespace GeekDesk
                     Keyboard.Focus(SearchBox);
                     RunTimeStatus.SEARCH_BOX_SHOW = false;
                     SearchBarRow.Visibility = Visibility.Collapsed;
+                    //内容区位置还原
+                    AccordionCard.Margin = new Thickness(0);
+                    XiaoQCard.Margin = new Thickness(0);
                     SearchBox.TextChanged -= SearchBox_TextChanged;
                     SearchBox.Clear();
                     SearchBox.TextChanged += SearchBox_TextChanged;
@@ -272,7 +296,7 @@ namespace GeekDesk
                     RightCard.VerticalCard.Content = null;
                     RightCard.VisibilitySearchCard(Visibility.Collapsed);
                     RightCard.Visibility = Visibility.Collapsed;
-                    AccordionCard.Visibility = Visibility.Visible;
+                    RestoreCardContentVisibility();
                 });
             }).Start();
         }
@@ -296,25 +320,16 @@ namespace GeekDesk
                 appData.MenuList.Add(new MenuInfo() { MenuName = "常用软件", MenuId = System.Guid.NewGuid().ToString(), MenuEdit = Visibility.Collapsed });
             }
 
-            // 侧边栏/音速启动默认尺寸
-            if (appData.AppConfig.WindowWidth > 500)
+            //按启动器风格应用各自记忆的窗口尺寸 (带边界校验)
+            if (appData.AppConfig.LauncherStyle == LauncherStyle.XiaoQDesk)
             {
-                this.Width = 340;
-                appData.AppConfig.WindowWidth = 340;
+                this.Width = Math.Min(Math.Max(appData.AppConfig.XiaoQWindowWidth, 560), 2000);
+                this.Height = Math.Min(Math.Max(appData.AppConfig.XiaoQWindowHeight, 380), 2000);
             }
             else
             {
-                this.Width = appData.AppConfig.WindowWidth;
-            }
-
-            if (appData.AppConfig.WindowHeight < 400)
-            {
-                this.Height = 600;
-                appData.AppConfig.WindowHeight = 600;
-            }
-            else
-            {
-                this.Height = appData.AppConfig.WindowHeight;
+                this.Width = Math.Min(Math.Max(appData.AppConfig.SonicWindowWidth, 180), 460);
+                this.Height = Math.Min(Math.Max(appData.AppConfig.SonicWindowHeight, 260), 2000);
             }
         }
 
@@ -858,6 +873,7 @@ namespace GeekDesk
                     TitleBarBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#323946"));
                     BottomToolbarBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#21252E"));
                     BottomToolbarBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#323946"));
+                    ApplySearchBarTheme("#1F242E", "#323946", "#D1D5DB");
 
                     Brush darkIconBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#D1D5DB"));
                     if (StyleSwitchPath != null) StyleSwitchPath.Fill = darkIconBrush;
@@ -874,6 +890,7 @@ namespace GeekDesk
                     TitleBarBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E2E8F0"));
                     BottomToolbarBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F8FAFC"));
                     BottomToolbarBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E2E8F0"));
+                    ApplySearchBarTheme("#F8FAFC", "#E2E8F0", "#334155");
 
                     Brush lightIconBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#334155"));
                     if (StyleSwitchPath != null) StyleSwitchPath.Fill = lightIconBrush;
@@ -900,6 +917,7 @@ namespace GeekDesk
                     TitleBarBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#7E8F9F"));
                     BottomToolbarBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DCE3EA"));
                     BottomToolbarBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ADBAC6"));
+                    ApplySearchBarTheme("#EDF1F5", "#ADBAC6", "#3B4654");
 
                     Brush metalIconBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3B4654"));
                     if (StyleSwitchPath != null) StyleSwitchPath.Fill = metalIconBrush;
@@ -914,6 +932,24 @@ namespace GeekDesk
             {
                 XiaoQCard.ApplyTheme(theme);
             }
+            if (RightCard != null)
+            {
+                RightCard.ApplyTheme(theme);
+            }
+        }
+
+        /// <summary>
+        /// 悬浮搜索条按主题着色 (背景/边框/文字/图标)
+        /// </summary>
+        private void ApplySearchBarTheme(string bg, string border, string foreground)
+        {
+            if (SearchBarRow == null) return;
+            Brush fgBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(foreground));
+            SearchBarRow.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(bg));
+            SearchBarRow.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(border));
+            SearchBox.Foreground = fgBrush;
+            if (SearchMagPath != null) SearchMagPath.Fill = fgBrush;
+            if (SearchClosePath != null) SearchClosePath.Fill = fgBrush;
         }
 
         private void SwitchTheme_Mac(object sender, RoutedEventArgs e)
@@ -960,24 +996,22 @@ namespace GeekDesk
             {
                 AccordionCard.Visibility = Visibility.Collapsed;
                 XiaoQCard.Visibility = Visibility.Visible;
-                // 小Q书桌宽卡片尺寸
-                if (this.Width < 500)
-                {
-                    this.Width = 620;
-                    this.Height = 440;
-                }
+                //小Q书桌模式: 宽卡片尺寸 + 更高的最小宽度 (保证左侧分类栏与图标网格可用)
+                this.MinWidth = 560;
+                this.MinHeight = 380;
+                this.Width = Math.Min(Math.Max(appData.AppConfig.XiaoQWindowWidth, 560), 2000);
+                this.Height = Math.Min(Math.Max(appData.AppConfig.XiaoQWindowHeight, 380), 2000);
                 PositionOverTaskbar();
             }
             else
             {
                 XiaoQCard.Visibility = Visibility.Collapsed;
                 AccordionCard.Visibility = Visibility.Visible;
-                // 音速启动窄条尺寸
-                if (this.Width > 420)
-                {
-                    this.Width = 320;
-                    this.Height = 560;
-                }
+                //音速启动模式: 窄条尺寸
+                this.MinWidth = 180;
+                this.MinHeight = 260;
+                this.Width = Math.Min(Math.Max(appData.AppConfig.SonicWindowWidth, 180), 460);
+                this.Height = Math.Min(Math.Max(appData.AppConfig.SonicWindowHeight, 260), 2000);
             }
         }
 
@@ -1173,6 +1207,17 @@ namespace GeekDesk
                 AppData appData = this.DataContext as AppData;
                 appData.AppConfig.WindowWidth = this.Width;
                 appData.AppConfig.WindowHeight = this.Height;
+                //窗口尺寸按当前启动器风格分别持久化
+                if (appData.AppConfig.LauncherStyle == LauncherStyle.XiaoQDesk)
+                {
+                    appData.AppConfig.XiaoQWindowWidth = this.Width;
+                    appData.AppConfig.XiaoQWindowHeight = this.Height;
+                }
+                else
+                {
+                    appData.AppConfig.SonicWindowWidth = this.Width;
+                    appData.AppConfig.SonicWindowHeight = this.Height;
+                }
             }
         }
 

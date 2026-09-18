@@ -164,9 +164,14 @@
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="ListBoxItem">
-                                        <Border Background="Transparent">
+                                        <Border Background="Transparent" CornerRadius="6" x:Name="ItemBorder">
                                             <ContentPresenter/>
                                         </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="ItemBorder" Property="Background" Value="#22949CB0"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
                                     </ControlTemplate>
                                 </Setter.Value>
                             </Setter>
@@ -185,14 +190,14 @@
                                                  ToolTip="{Binding Content}"
                                                  Tag="{Binding}">
                                 <Image Style="{StaticResource XiaoQIconImageStyle}"/>
-                                <TextBlock Text="{Binding Name}" 
+                                <TextBlock Text="{Binding Name}"
                                            MaxWidth="72"
                                            Margin="0,3,0,0"
                                            FontSize="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=DataContext.AppConfig.IconFontSize, Mode=OneWay, FallbackValue=12}"
                                            TextWrapping="NoWrap"
                                            TextTrimming="CharacterEllipsis"
                                            TextAlignment="Center"
-                                           Foreground="{DynamicResource IconTextBrush}"
+                                           Foreground="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=DataContext.AppConfig.TextColor}"
                                            Visibility="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=DataContext.AppConfig.ShowIconTitle, Converter={StaticResource BoolToVisibilityConverter}}"/>
                             </hc:SimpleStackPanel>
                         </DataTemplate>

@@ -62,7 +62,27 @@ namespace GeekDesk.Control.Other
                 info.Name = IconName.Text;
                 if (!string.IsNullOrWhiteSpace(IconPath.Text))
                 {
-                    info.Path = IconPath.Text.Trim();
+                    string newPath = IconPath.Text.Trim();
+                    bool pathChanged = !string.Equals(info.Path, newPath, StringComparison.OrdinalIgnoreCase);
+                    info.Path = newPath;
+                    if (pathChanged)
+                    {
+                        //路径变更后按新路径重新提取图标
+                        try
+                        {
+                            string iconPath = FileUtil.GetIconPathByLnk(info.LnkPath);
+                            if (string.IsNullOrEmpty(iconPath))
+                            {
+                                iconPath = newPath;
+                            }
+                            info.BitmapImage = ImageUtil.GetBitmapIconByPath(iconPath);
+                            info.DefaultImage_NoWrite = info.ImageByteArr;
+                        }
+                        catch (Exception ex)
+                        {
+                            LogUtil.WriteErrorLog(ex, "按新路径刷新图标失败: " + newPath);
+                        }
+                    }
                 }
                 info.AdminStartUp = IconIsAdmin.IsChecked.Value;
                 info.StartArg = StartArg.Text;

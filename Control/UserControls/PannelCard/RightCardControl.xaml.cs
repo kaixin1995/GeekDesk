@@ -2,6 +2,7 @@
 using GeekDesk.Constant;
 using GeekDesk.Control.Other;
 using GeekDesk.Control.Windows;
+using GeekDesk.Converts;
 using GeekDesk.Util;
 using GeekDesk.ViewModel;
 using GeekDesk.ViewModel.Temp;
@@ -16,6 +17,7 @@ using System.Reflection;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
@@ -526,6 +528,40 @@ namespace GeekDesk.Control.UserControls.PannelCard
             {
                 WrapCard.Visibility = Visibility.Visible;
             }
+        }
+
+        /// <summary>
+        /// 按主题着色搜索卡片背景 (保持不透明度与设置的绑定)
+        /// </summary>
+        public void ApplyTheme(VisualTheme theme)
+        {
+            Color bgColor;
+            switch (theme)
+            {
+                case VisualTheme.MacAcrylic:
+                    bgColor = (Color)ColorConverter.ConvertFromString("#1D212B");
+                    break;
+                case VisualTheme.PureMinimal:
+                    bgColor = Colors.White;
+                    break;
+                default:
+                    bgColor = (Color)ColorConverter.ConvertFromString("#FAF9F5");
+                    break;
+            }
+            WrapCard.Background = BuildCardBrush(bgColor);
+            VerticalCard.Background = BuildCardBrush(bgColor);
+        }
+
+        private static Brush BuildCardBrush(Color color)
+        {
+            SolidColorBrush brush = new SolidColorBrush(color);
+            BindingOperations.SetBinding(brush, Brush.OpacityProperty,
+                new Binding("AppConfig.CardOpacity")
+                {
+                    Source = MainWindow.appData,
+                    Converter = new OpcityConvert()
+                });
+            return brush;
         }
 
         /// <summary>

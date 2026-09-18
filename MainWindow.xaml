@@ -163,7 +163,7 @@
                                 <!-- 黄色: 最小化/贴边隐藏 (-) -->
                                 <Button Style="{StaticResource CrystalButtonStyle}"
                                         Tag="{StaticResource SonicMinSymbol}"
-                                        ToolTip="最小化/贴边收起"
+                                        ToolTip="隐藏面板"
                                         Click="CloseButtonClick">
                                     <Button.Background>
                                         <RadialGradientBrush GradientOrigin="0.3,0.3" Center="0.5,0.5" RadiusX="0.5" RadiusY="0.5">
@@ -242,7 +242,7 @@
                                     <ColumnDefinition Width="20"/>
                                 </Grid.ColumnDefinitions>
                                 <!-- 放大镜小图标 -->
-                                <Path Grid.Column="0" Fill="#6B7280" Width="12" Height="12" Stretch="Uniform" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                <Path Grid.Column="0" x:Name="SearchMagPath" Fill="#6B7280" Width="12" Height="12" Stretch="Uniform" VerticalAlignment="Center" HorizontalAlignment="Center"
                                       Data="M416 128C256.96 128 128 256.96 128 416s128.96 288 288 288 288-128.96 288-288S607.04 128 416 128z m0 512c-123.712 0-224-100.288-224-224S292.288 192 416 192s224 100.288 224 224-100.288 224-224 224z m441.376 307.2l-176.64-176.64a32 32 0 0 0-45.248 45.248l176.64 176.64a32 32 0 0 0 45.248-45.248z"/>
                                 <!-- 搜索文本框 -->
                                 <TextBox Grid.Column="1" x:Name="SearchBox" Height="24" FontSize="12" BorderThickness="0" Background="Transparent"
@@ -250,7 +250,7 @@
                                          Style="{StaticResource MyTextBoxStyle}"/>
                                 <!-- 清空/关闭搜索 -->
                                 <Button Grid.Column="2" Background="Transparent" BorderThickness="0" Padding="0" Cursor="Hand" ToolTip="关闭搜索" Click="CloseSearchClick" FocusVisualStyle="{x:Null}">
-                                    <Path Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" 
+                                    <Path x:Name="SearchClosePath" Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
                                           Fill="#9CA3AF" Width="10" Height="10" Stretch="Uniform"/>
                                 </Button>
                             </Grid>
