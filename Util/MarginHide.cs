@@ -245,6 +245,11 @@ namespace GeekDesk.Util
             if (window == null) return;
             window.Dispatcher.Invoke(() =>
             {
+                //先清除该属性上可能残留的旧动画时钟 (渲染停摆时 Completed 不触发,
+                //旧时钟会长期持有位置属性导致后续定位/拖动全部失效)
+                window.BeginAnimation(Window.LeftProperty, null);
+                window.BeginAnimation(Window.TopProperty, null);
+
                 double targetPos = to;
                 switch (hideType)
                 {

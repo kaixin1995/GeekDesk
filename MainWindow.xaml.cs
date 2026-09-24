@@ -611,6 +611,8 @@ namespace GeekDesk
             if (appData.AppConfig.LauncherStyle == LauncherStyle.XiaoQDesk)
             {
                 mainWindow.PositionOverTaskbar();
+                //呼出时自愈刷新: 重新绑定分类与图标, 防止长时间运行后内容区失联 (点不动/空白)
+                try { mainWindow.XiaoQCard.RefreshContent(); } catch { }
             }
             //mainWindow.Visibility = Visibility.Visible;
             if (appData.AppConfig.AppAnimation)
@@ -992,7 +994,9 @@ namespace GeekDesk
             if (appData.AppConfig.LauncherStyle == LauncherStyle.XiaoQDesk)
             {
                 AccordionCard.Visibility = Visibility.Collapsed;
+                AccordionCard.IsHitTestVisible = false;
                 XiaoQCard.Visibility = Visibility.Visible;
+                XiaoQCard.IsHitTestVisible = true;
                 //小Q书桌模式: 宽卡片尺寸 + 更高的最小宽度 (保证左侧分类栏与图标网格可用)
                 this.MinWidth = 560;
                 this.MinHeight = 380;
@@ -1003,7 +1007,9 @@ namespace GeekDesk
             else
             {
                 XiaoQCard.Visibility = Visibility.Collapsed;
+                XiaoQCard.IsHitTestVisible = false;
                 AccordionCard.Visibility = Visibility.Visible;
+                AccordionCard.IsHitTestVisible = true;
                 //音速启动模式: 窄条尺寸
                 this.MinWidth = 180;
                 this.MinHeight = 260;
@@ -1019,6 +1025,11 @@ namespace GeekDesk
         {
             try
             {
+                //先清除可能卡住的窗口位置动画时钟 (长时间运行/睡眠唤醒后渲染时钟可能停摆,
+                //导致 Left/Top 被旧动画长期持有, 后续定位与拖动全部失效)
+                BeginAnimation(LeftProperty, null);
+                BeginAnimation(TopProperty, null);
+
                 System.Drawing.Point mousePt = System.Windows.Forms.Cursor.Position;
                 System.Windows.Forms.Screen screen = System.Windows.Forms.Screen.FromPoint(mousePt);
                 if (screen == null) screen = System.Windows.Forms.Screen.PrimaryScreen;
@@ -1044,6 +1055,12 @@ namespace GeekDesk
                     To = targetTop,
                     Duration = TimeSpan.FromMilliseconds(180),
                     EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+                };
+                //动画完成后释放时钟并落到最终位置, 避免 HoldEnd 长期持有 Top 属性
+                slideAnim.Completed += (s, e) =>
+                {
+                    BeginAnimation(TopProperty, null);
+                    Top = targetTop;
                 };
                 this.BeginAnimation(TopProperty, slideAnim);
             }

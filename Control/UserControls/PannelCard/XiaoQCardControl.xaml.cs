@@ -64,6 +64,29 @@ namespace GeekDesk.Control.UserControls.PannelCard
             }
         }
 
+        /// <summary>
+        /// 面板呼出时自愈刷新: 重新绑定分类列表并恢复选中项,
+        /// 防止长时间运行 (睡眠唤醒/渲染时钟停摆) 后内容区失联 (分类点不动/图标区空白)
+        /// </summary>
+        public void RefreshContent()
+        {
+            MenuInfo selected = CategoryListBox.SelectedItem as MenuInfo ?? currentMenu;
+            CategoryListBox.ItemsSource = null;
+            CategoryListBox.ItemsSource = appData.MenuList;
+            if (selected != null && appData.MenuList.Contains(selected))
+            {
+                CategoryListBox.SelectedItem = selected;
+                SwitchCategory(selected);
+            }
+            else if (appData.MenuList.Count > 0)
+            {
+                CategoryListBox.SelectedIndex = 0;
+                SwitchCategory(appData.MenuList[0]);
+            }
+            this.IsHitTestVisible = true;
+            InvalidateVisual();
+        }
+
         public void ApplyTheme(VisualTheme theme)
         {
             switch (theme)

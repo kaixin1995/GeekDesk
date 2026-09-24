@@ -21,9 +21,9 @@
     <TieredCompilation>true</TieredCompilation>
     <TieredCompilationQuickJit>true</TieredCompilationQuickJit>
     <NoWarn>$(NoWarn);NU1701;CS8981;CS0168;CS0219;CS0169;CS0414;CS0618;CS0108;CS0105;CS0649;CS0612;SYSLIB0014;SYSLIB0021;WFAC010;CA1416</NoWarn>
-    <Version>1.0.0.2</Version>
-    <AssemblyVersion>1.0.0.2</AssemblyVersion>
-    <FileVersion>1.0.0.2</FileVersion>
+    <Version>1.0.0.3</Version>
+    <AssemblyVersion>1.0.0.3</AssemblyVersion>
+    <FileVersion>1.0.0.3</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="HandyControl" Version="3.5.1" />
