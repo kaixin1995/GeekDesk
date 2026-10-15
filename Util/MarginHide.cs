@@ -217,6 +217,8 @@ namespace GeekDesk.Util
 
             window.Visibility = Visibility.Visible;
             window.Show();
+            //强制重建呈现表面, 防止长时间运行后窗口状态正常但屏幕不可见
+            WindowUtil.ForceRefreshSurface(window);
 
             if (CURRENT_DOCK == HideType.TOP_HIDE || windowTop <= screenTop - showMarginWidth + 10)
             {

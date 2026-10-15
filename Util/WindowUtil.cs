@@ -275,6 +275,30 @@ namespace GeekDesk.Util
             return topHandle.Equals(handle) || topHandle.Equals(deskHandle) || string.IsNullOrEmpty(windowTitle);
         }
 
+        [DllImport("user32.dll")]
+        public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+
+        /// <summary>
+        /// 强制窗口重建呈现 (SWP_FRAMECHANGED): 分层窗口长时间运行/睡眠唤醒后呈现表面可能失效,
+        /// 表现为窗口状态正常 (无异常) 但屏幕上不可见/不刷新, 仅重启可恢复; 此调用强制系统重新计算并重绘
+        /// </summary>
+        public static void ForceRefreshSurface(Window window)
+        {
+            try
+            {
+                IntPtr handle = new WindowInteropHelper(window).Handle;
+                if (handle == IntPtr.Zero) return;
+                const uint SWP_NOSIZE = 0x0001;
+                const uint SWP_NOMOVE = 0x0002;
+                const uint SWP_NOZORDER = 0x0004;
+                const uint SWP_NOACTIVATE = 0x0010;
+                const uint SWP_FRAMECHANGED = 0x0020;
+                SetWindowPos(handle, IntPtr.Zero, 0, 0, 0, 0,
+                    SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+            }
+            catch (Exception) { }
+        }
+
         private static string GetWindowTitle(IntPtr handle)
         {
             const int nChars = 256;

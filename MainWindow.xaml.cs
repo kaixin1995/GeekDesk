@@ -585,6 +585,17 @@ namespace GeekDesk
         }
         public static void ShowApp()
         {
+            //召唤现场留痕: 若再次出现"面板隐形"类问题, 该日志可提供当时的状态证据
+            try
+            {
+                LogUtil.WriteLog("召唤面板: Vis=" + mainWindow.Visibility
+                    + " Opacity=" + mainWindow.Opacity
+                    + " EdgeHide=" + MarginHide.IS_HIDE
+                    + " Pos=(" + (int)mainWindow.Left + "," + (int)mainWindow.Top + ")"
+                    + " Size=" + (int)mainWindow.Width + "x" + (int)mainWindow.Height);
+            }
+            catch (Exception) { }
+
             //有全屏化应用则不显示
             //if (CommonCode.IsPrimaryFullScreen())
             //{
@@ -614,6 +625,10 @@ namespace GeekDesk
                 //呼出时自愈刷新: 重新绑定分类与图标, 防止长时间运行后内容区失联 (点不动/空白)
                 try { mainWindow.XiaoQCard.RefreshContent(); } catch { }
             }
+            //强制分层窗口重建呈现表面并做±1px尺寸微调: 长时间运行/睡眠唤醒后
+            //呈现表面可能失效, 表现为 Show 无异常但屏幕上面板隐形, 仅重启可恢复
+            WindowUtil.ForceRefreshSurface(mainWindow);
+            mainWindow.NudgeWindowSize();
             //mainWindow.Visibility = Visibility.Visible;
             if (appData.AppConfig.AppAnimation)
             {
@@ -1016,6 +1031,23 @@ namespace GeekDesk
                 this.Width = Math.Min(Math.Max(appData.AppConfig.SonicWindowWidth, 180), 460);
                 this.Height = Math.Min(Math.Max(appData.AppConfig.SonicWindowHeight, 260), 2000);
             }
+        }
+
+        /// <summary>
+        /// 尺寸±1px 微调 (跨两帧提交), 强制分层窗口重新提交呈现内容; 单帧内不可感知
+        /// </summary>
+        private void NudgeWindowSize()
+        {
+            try
+            {
+                double w = Width;
+                Width = w + 1;
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    try { Width = w; } catch { }
+                }), DispatcherPriority.Background);
+            }
+            catch (Exception) { }
         }
 
         /// <summary>
