@@ -159,5 +159,89 @@ namespace GeekDesk.Util
             return 1.0;
         }
 
+        #region 逐显示器 DPI 与工作区 (分辨率/缩放变更后定位的正确依据)
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct POINT_PT
+        {
+            public int X;
+            public int Y;
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        private struct MONITORINFO_EX
+        {
+            public int cbSize;
+            public int rcMonitorLeft;
+            public int rcMonitorTop;
+            public int rcMonitorRight;
+            public int rcMonitorBottom;
+            public int rcWorkLeft;
+            public int rcWorkTop;
+            public int rcWorkRight;
+            public int rcWorkBottom;
+            public uint dwFlags;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+            public string szDevice;
+        }
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr MonitorFromPoint(POINT_PT pt, uint dwFlags);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO_EX lpmi);
+
+        [DllImport("Shcore.dll")]
+        private static extern int GetDpiForMonitor(IntPtr hMonitor, int dpiType, out uint dpiX, out uint dpiY);
+
+        [DllImport("user32.dll")]
+        private static extern bool GetCursorPos(ref POINT_PT lpPoint);
+
+        private const uint MONITOR_DEFAULTTONEAREST = 2;
+        private const int MDT_EFFECTIVE_DPI = 0;
+
+        /// <summary>
+        /// 获取鼠标所在显示器的有效缩放与工作区 (DIP 单位)。
+        /// 使用逐显示器 DPI (GetDpiForMonitor), 分辨率/缩放变更后即时有效;
+        /// 旧 GetScreenScalingFactor 取的是主屏系统 DPI, 混合 DPI 多屏或变更后会算错坐标。
+        /// </summary>
+        /// <returns>失败返回 false (调用方回退旧算法)</returns>
+        public static bool TryGetWorkAreaAtMouse(out double scale, out double workLeft, out double workTop, out double workWidth, out double workHeight)
+        {
+            scale = 1.0;
+            workLeft = workTop = workWidth = workHeight = 0;
+            try
+            {
+                POINT_PT pt = new POINT_PT();
+                if (!GetCursorPos(ref pt)) return false;
+
+                IntPtr hMonitor = MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
+                if (hMonitor == IntPtr.Zero) return false;
+
+                uint dpiX, dpiY;
+                if (GetDpiForMonitor(hMonitor, MDT_EFFECTIVE_DPI, out dpiX, out dpiY) != 0 || dpiY == 0)
+                {
+                    return false;
+                }
+                scale = dpiY / 96.0;
+
+                MONITORINFO_EX mi = new MONITORINFO_EX();
+                mi.cbSize = System.Runtime.InteropServices.Marshal.SizeOf(typeof(MONITORINFO_EX));
+                if (!GetMonitorInfo(hMonitor, ref mi)) return false;
+
+                workLeft = mi.rcWorkLeft / scale;
+                workTop = mi.rcWorkTop / scale;
+                workWidth = (mi.rcWorkRight - mi.rcWorkLeft) / scale;
+                workHeight = (mi.rcWorkBottom - mi.rcWorkTop) / scale;
+                return workWidth > 0 && workHeight > 0;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        #endregion
+
     }
 }

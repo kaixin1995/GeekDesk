@@ -1062,21 +1062,44 @@ namespace GeekDesk
                 BeginAnimation(LeftProperty, null);
                 BeginAnimation(TopProperty, null);
 
-                System.Drawing.Point mousePt = System.Windows.Forms.Cursor.Position;
-                System.Windows.Forms.Screen screen = System.Windows.Forms.Screen.FromPoint(mousePt);
-                if (screen == null) screen = System.Windows.Forms.Screen.PrimaryScreen;
+                //优先取鼠标所在显示器的逐屏DPI与工作区 (分辨率/缩放变更后仍正确),
+                //失败再回退主屏系统DPI算法
+                double dpiScale, workLeft, workTop, workWidth, workHeight;
+                if (ScreenUtil.TryGetWorkAreaAtMouse(out dpiScale, out workLeft, out workTop, out workWidth, out workHeight))
+                {
+                    dpiScale = 1.0; //工作区已是DIP, 不再换算
+                }
+                else
+                {
+                    System.Drawing.Point mousePt = System.Windows.Forms.Cursor.Position;
+                    System.Windows.Forms.Screen screen = System.Windows.Forms.Screen.FromPoint(mousePt);
+                    if (screen == null) screen = System.Windows.Forms.Screen.PrimaryScreen;
 
-                double dpiScale = ScreenUtil.GetScreenScalingFactor();
-                if (dpiScale <= 0) dpiScale = 1.0;
+                    dpiScale = ScreenUtil.GetScreenScalingFactor();
+                    if (dpiScale <= 0) dpiScale = 1.0;
 
-                double workLeft = screen.WorkingArea.Left / dpiScale;
-                double workTop = screen.WorkingArea.Top / dpiScale;
-                double workWidth = screen.WorkingArea.Width / dpiScale;
-                double workHeight = screen.WorkingArea.Height / dpiScale;
+                    workLeft = screen.WorkingArea.Left / dpiScale;
+                    workTop = screen.WorkingArea.Top / dpiScale;
+                    workWidth = screen.WorkingArea.Width / dpiScale;
+                    workHeight = screen.WorkingArea.Height / dpiScale;
+                }
+                double workRight = workLeft + workWidth;
                 double workBottom = workTop + workHeight;
 
                 double targetLeft = workLeft + (workWidth - this.Width) / 2;
                 double targetTop = workBottom - this.Height;
+
+                //边界钳制: 窗口比新工作区更宽/更高时贴左上, 防止负坐标或屏幕外
+                if (targetLeft + this.Width > workRight) targetLeft = workLeft;
+                if (targetLeft < workLeft) targetLeft = workLeft;
+                if (this.Height >= workHeight)
+                {
+                    targetTop = workTop;
+                }
+                else if (targetTop < workTop)
+                {
+                    targetTop = workTop;
+                }
 
                 this.Left = targetLeft;
                 this.Top = targetTop;

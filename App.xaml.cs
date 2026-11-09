@@ -52,6 +52,8 @@ namespace GeekDesk
             Application.Current.DispatcherUnhandledException += Current_DispatcherUnhandledException;
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             SystemEvents.PowerModeChanged += OnPowerModeChanged;
+            //分辨率/缩放/显示器拓扑变更: 主动恢复窗口几何, 防止面板困在屏幕外或贴边状态失效
+            SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged;
         }
 
         private void App_Startup(object sender, StartupEventArgs e)
@@ -79,6 +81,63 @@ namespace GeekDesk
                     LogUtil.WriteLog("System is going to sleep.");
                     break;
             }
+        }
+
+        /// <summary>
+        /// 显示设置变更 (分辨率/缩放/增删显示器): 清除位置动画残留,
+        /// 贴边隐藏状态按新几何重评, 屏幕外窗口拉回可视区, 并强制重建呈现
+        /// </summary>
+        private void OnDisplaySettingsChanged(object sender, EventArgs e)
+        {
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                try
+                {
+                    GeekDesk.MainWindow w = GeekDesk.MainWindow.mainWindow;
+                    if (w == null) return;
+
+                    //清掉可能持有 Left/Top 的旧动画时钟
+                    w.BeginAnimation(Window.LeftProperty, null);
+                    w.BeginAnimation(Window.TopProperty, null);
+
+                    if (MarginHide.IS_HIDE)
+                    {
+                        //按新分辨率重新滑出并重评停靠状态
+                        MarginHide.ForceShowFromMargin();
+                    }
+                    else if (w.Visibility == Visibility.Visible)
+                    {
+                        //窗口大部分落在可视区之外时拉回 (分辨率缩小/移除显示器)
+                        double vw = SystemParameters.VirtualScreenWidth;
+                        double vh = SystemParameters.VirtualScreenHeight;
+                        double vl = SystemParameters.VirtualScreenLeft;
+                        double vt = SystemParameters.VirtualScreenTop;
+                        bool outside = w.Left > vl + vw - 40
+                                    || w.Left < vl - w.Width + 40
+                                    || w.Top > vt + vh - 40
+                                    || w.Top < vt - w.Height + 40;
+                        if (outside)
+                        {
+                            double nl = Math.Max(vl, Math.Min(w.Left, vl + vw - w.Width));
+                            double nt = Math.Max(vt, Math.Min(w.Top, vt + vh - w.Height));
+                            if (nl + w.Width > vl + vw) nl = vl;
+                            if (nt + w.Height > vt + vh) nt = vt;
+                            w.Left = nl;
+                            w.Top = nt;
+                        }
+                    }
+
+                    //强制分层窗口重建呈现 (缩放变更后表面可能失效)
+                    WindowUtil.ForceRefreshSurface(w);
+                    LogUtil.WriteLog("显示设置变更: 已重评窗口几何 Vis=" + w.Visibility
+                        + " IS_HIDE=" + MarginHide.IS_HIDE
+                        + " Pos=(" + (int)w.Left + "," + (int)w.Top + ")");
+                }
+                catch (Exception ex)
+                {
+                    LogUtil.WriteErrorLog(ex, "处理显示设置变更异常");
+                }
+            }));
         }
 
         void Current_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)

@@ -220,6 +220,10 @@ namespace GeekDesk.Util
             //强制重建呈现表面, 防止长时间运行后窗口状态正常但屏幕不可见
             WindowUtil.ForceRefreshSurface(window);
 
+            //右侧滑出目标在分辨率缩小后可能为负, 钳制到屏幕内
+            double rightShowTarget = screenWidth - Math.Abs(screenLeft) - windowWidth;
+            if (rightShowTarget < screenLeft) rightShowTarget = screenLeft;
+
             if (CURRENT_DOCK == HideType.TOP_HIDE || windowTop <= screenTop - showMarginWidth + 10)
             {
                 IS_HIDE = false;
@@ -233,7 +237,7 @@ namespace GeekDesk.Util
             else if (CURRENT_DOCK == HideType.RIGHT_HIDE || windowLeft + Math.Abs(screenLeft) >= screenWidth - showMarginWidth - 10)
             {
                 IS_HIDE = false;
-                HideAnimation(windowLeft, screenWidth - Math.Abs(screenLeft) - windowWidth, Window.LeftProperty, HideType.RIGHT_SHOW);
+                HideAnimation(windowLeft, rightShowTarget, Window.LeftProperty, HideType.RIGHT_SHOW);
             }
             else
             {
