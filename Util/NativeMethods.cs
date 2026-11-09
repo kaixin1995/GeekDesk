@@ -37,6 +37,9 @@ namespace GeekDesk.Util
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern IntPtr GetModuleHandle(string lpModuleName);
 
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        public static extern IntPtr LoadLibrary(string lpFileName);
+
         #region API 参数的常量定义
 
         public const uint SHGFI_ICON = 0x100;

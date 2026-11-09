@@ -94,7 +94,8 @@ namespace GeekDesk
 
         void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            LogUtil.WriteErrorLog(e, "严重异常!");
+            //记录真正的异常对象 (EventArgs 本身不含堆栈信息)
+            LogUtil.WriteErrorLog(e.ExceptionObject, "严重异常!");
         }
 
         public static void DoEvents()

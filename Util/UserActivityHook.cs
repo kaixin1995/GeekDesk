@@ -527,6 +527,20 @@ namespace GeekDesk.Util
 
 
         /// <summary>
+        /// 获取低级钩子可用的模块句柄: 优先当前exe模块句柄 (单文件发布下按名查找可能失败),
+        /// 失败则退回 user32 模块句柄, 再失败返回零句柄 (低级钩子回调在本进程内, 零句柄亦可)
+        /// </summary>
+        private static IntPtr GetValidHookModuleHandle()
+        {
+            IntPtr hMod = NativeMethods.GetModuleHandle(null);
+            if (hMod == IntPtr.Zero)
+            {
+                hMod = NativeMethods.LoadLibrary("user32.dll");
+            }
+            return hMod;
+        }
+
+        /// <summary>
         /// Installs both mouse and keyboard hooks and starts rasing events
         /// </summary>
         /// <exception cref="Win32Exception">Any windows problem.</exception>
@@ -550,7 +564,9 @@ namespace GeekDesk.Util
                 // Create an instance of HookProc.
                 MouseHookProcedure = new HookProc(MouseHookProc);
                 // install hook using module handle compatible with single-file publishing
-                IntPtr hMod = NativeMethods.GetModuleHandle(Process.GetCurrentProcess().MainModule.ModuleName);
+                //单文件发布下按主模块名可能取不到有效句柄, 先取当前exe模块, 失败再退回 user32
+                //(低级钩子回调在本进程内, 只要求句柄有效)
+                IntPtr hMod = GetValidHookModuleHandle();
                 hMouseHook = SetWindowsHookEx(
                     WH_MOUSE_LL,
                     MouseHookProcedure,
@@ -574,7 +590,7 @@ namespace GeekDesk.Util
                 // Create an instance of HookProc.
                 KeyboardHookProcedure = new HookProc(KeyboardHookProc);
                 // install hook using module handle compatible with single-file publishing
-                IntPtr hMod = NativeMethods.GetModuleHandle(Process.GetCurrentProcess().MainModule.ModuleName);
+                IntPtr hMod = GetValidHookModuleHandle();
                 hKeyboardHook = SetWindowsHookEx(
                     WH_KEYBOARD_LL,
                     KeyboardHookProcedure,

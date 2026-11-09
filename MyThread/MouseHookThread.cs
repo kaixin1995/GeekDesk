@@ -23,14 +23,22 @@ namespace GeekDesk.MyThread
             dispatcher = DispatcherBuild.Build();
             dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
             {
-                hook = new UserActivityHook();
-
-                if (appConfig.MouseMiddleShow)
+                try
                 {
-                    hook.OnMouseWheelUp += OnMouseWheelUp;
-                }
+                    hook = new UserActivityHook();
 
-                hook.Start(true, false);
+                    if (appConfig.MouseMiddleShow)
+                    {
+                        hook.OnMouseWheelUp += OnMouseWheelUp;
+                    }
+
+                    hook.Start(true, false);
+                }
+                catch (Exception ex)
+                {
+                    //钩子安装失败只降级显秒/中键呼出功能, 绝不允许拖垮整个应用
+                    LogUtil.WriteErrorLog(ex, "全局鼠标钩子安装失败, 相关功能已降级!");
+                }
             }));
         }
 
