@@ -61,6 +61,9 @@ namespace GeekDesk
             //用于其他类访问
             mainWindow = this;
 
+            //窗口标题与单实例唤醒通道统一 (DEV 模式加后缀, 避免与生产实例串线)
+            this.Title = Constants.MAIN_WINDOW_TITLE;
+
             //执行待办提醒
             ToDoTask.BackLogCheck();
 

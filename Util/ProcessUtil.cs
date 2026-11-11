@@ -249,17 +249,27 @@ namespace GeekDesk.Util
 
         public static void ReStartApp()
         {
-            if (MainWindow.appData.AppConfig.MouseMiddleShow || MainWindow.appData.AppConfig.SecondsWindow == true)
+            if (Application.Current == null) return;
+            //统一在UI线程执行 (电源事件等可能从其它线程回调)
+            Application.Current.Dispatcher.Invoke(new Action(() =>
             {
-                MouseHookThread.Dispose();
-            }
+                try
+                {
+                    MouseHookThread.Dispose();
+                }
+                catch (Exception) { }
 
-            Process p = new Process();
-            p.StartInfo.FileName = Constants.APP_DIR + "GeekDesk.exe";
-            p.StartInfo.WorkingDirectory = Constants.APP_DIR;
-            p.Start();
+                //先释放单实例互斥锁再启动新进程: 消除新进程抢锁失败自杀(唤醒后程序消失)
+                //或抢锁成功形成双实例(双托盘图标)的竞态窗口
+                App.ReleaseSingleInstanceMutex();
 
-            Application.Current.Shutdown();
+                Process p = new Process();
+                p.StartInfo.FileName = Constants.APP_DIR + "GeekDesk.exe";
+                p.StartInfo.WorkingDirectory = Constants.APP_DIR;
+                p.Start();
+
+                Application.Current.Shutdown();
+            }));
         }
 
         [Flags]

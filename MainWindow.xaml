@@ -14,7 +14,7 @@
         xmlns:hc="https://handyorg.github.io/handycontrol" xmlns:viewmodel="clr-namespace:GeekDesk.ViewModel" 
         xmlns:my="clr-namespace:GeekDesk.Util"
         d:DataContext="{d:DesignInstance Type=viewmodel:AppData}"
-        Title="GeekDesk_Main_8400A17AEEF7C029" 
+        Title="GeekDesk_Main_8400A17AEEF7C029"
         MinWidth="180"
         MinHeight="260"
         WindowStyle="None"

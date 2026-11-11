@@ -21,7 +21,64 @@ namespace GeekDesk
     /// </summary>
     public partial class App : Application
     {
-        System.Threading.Mutex mutex;
+        static System.Threading.Mutex mutex;
+
+        private void App_Startup(object sender, StartupEventArgs e)
+        {
+            TryAcquireSingleInstance();
+        }
+
+        /// <summary>
+        /// 单实例判定: 已有实例可唤醒则唤醒退出; 联系不上(已有实例正在退出, 如睡眠唤醒
+        /// 自动重启的竞态窗口)则等待接管, 避免双实例双托盘图标或"点了没反应程序消失"
+        /// </summary>
+        private void TryAcquireSingleInstance()
+        {
+            mutex = new System.Threading.Mutex(true, Constants.MY_NAME, out bool isNewInstance);
+            if (isNewInstance) return;
+
+            //已存在实例: 尝试唤醒后退出
+            bool awakened = MessageUtil.SendMsgByWName(Constants.MAIN_WINDOW_TITLE, "ShowApp")
+                  | MessageUtil.SendMsgByPName(Constants.MY_NAME, "ShowApp");
+            if (awakened)
+            {
+                Environment.Exit(0);
+                return;
+            }
+
+            //唤醒失败但互斥锁仍被占用: 已有实例多半正处于退出过程中,
+            //等待其退出后接管单实例 (最多约5秒)
+            mutex.Dispose();
+            mutex = null;
+            for (int i = 0; i < 50; i++)
+            {
+                System.Threading.Thread.Sleep(100);
+                mutex = new System.Threading.Mutex(true, Constants.MY_NAME, out isNewInstance);
+                if (isNewInstance)
+                {
+                    LogUtil.WriteLog("等待后接管单实例 (前一实例退出竞态)");
+                    return;
+                }
+                mutex.Dispose();
+                mutex = null;
+            }
+            //仍联系不上也接管不了: 异常状态, 退出以防双实例
+            Environment.Exit(0);
+        }
+
+        /// <summary>
+        /// 重启场景下先释放单实例互斥锁 (在UI线程执行, 与获取线程保持亲和)
+        /// </summary>
+        public static void ReleaseSingleInstanceMutex()
+        {
+            if (Application.Current == null) return;
+            Application.Current.Dispatcher.Invoke(new Action(() =>
+            {
+                try { mutex?.ReleaseMutex(); } catch (Exception) { }
+                try { mutex?.Dispose(); } catch (Exception) { }
+                mutex = null;
+            }));
+        }
 
         public App()
         {
@@ -54,18 +111,6 @@ namespace GeekDesk
             SystemEvents.PowerModeChanged += OnPowerModeChanged;
             //分辨率/缩放/显示器拓扑变更: 主动恢复窗口几何, 防止面板困在屏幕外或贴边状态失效
             SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged;
-        }
-
-        private void App_Startup(object sender, StartupEventArgs e)
-        {
-            mutex = new System.Threading.Mutex(true, Constants.MY_NAME, out bool isNewInstance);
-            if (!isNewInstance)
-            {
-                // 如果已经存在运行中的实例，向其发送 ShowApp 激活呼出指令，并直接退出当前进程
-                MessageUtil.SendMsgByWName("GeekDesk_Main_" + Constants.MY_UUID, "ShowApp");
-                MessageUtil.SendMsgByPName(Constants.MY_NAME, "ShowApp");
-                Environment.Exit(0);
-            }
         }
 
         // 电源监听

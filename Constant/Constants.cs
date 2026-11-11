@@ -16,6 +16,11 @@ namespace GeekDesk.Constant
         public static string MY_UUID = "8400A17AEEF7C029";
 
         /// <summary>
+        /// 主窗口标题 (单实例唤醒的消息通道, DEV 模式加后缀避免与生产实例串线)
+        /// </summary>
+        public static string MAIN_WINDOW_TITLE = "GeekDesk_Main_" + MY_UUID + (DEV ? "_D" : "");
+
+        /// <summary>
         /// 获取当前程序集版本号 (优先从 Assembly / FileVersion 读取)
         /// </summary>
         public static string APP_VERSION
