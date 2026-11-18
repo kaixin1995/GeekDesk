@@ -346,8 +346,8 @@ namespace GeekDesk
             {
                 ShowApp();
             }
-            //给任务栏图标一个名字
-            BarIcon.Text = Constants.MY_NAME;
+            //给托盘图标一个名字 (独立宿主窗口, 隔离主窗口操作对托盘的影响)
+            TrayHostWindow.EnsureTray();
             ApplyLauncherStyle();
             ApplyThemeStyle();
 
@@ -580,12 +580,6 @@ namespace GeekDesk
         /// <summary>
         /// 右键任务栏图标 显示主面板
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public void ShowApp(object sender, RoutedEventArgs e)
-        {
-            ShowApp();
-        }
         public static void ShowApp()
         {
             //召唤现场留痕: 若再次出现"面板隐形"类问题, 该日志可提供当时的状态证据
@@ -1166,24 +1160,7 @@ namespace GeekDesk
             try { Process.Start("rundll32.exe", "user32.dll,LockWorkStation"); } catch { }
         }
 
-        /// <summary>
-        /// 图片图标单击事件
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void NotifyIcon_Click(object sender, RoutedEventArgs e)
-        {
-            if (CheckShouldShowApp())
-            {
-                ShowApp();
-            }
-            else
-            {
-                HideApp();
-            }
-        }
-
-        private static bool CheckShouldShowApp()
+        internal static bool CheckShouldShowApp()
         {
             return mainWindow.Visibility == Visibility.Collapsed
                 || mainWindow.Opacity == 0
@@ -1196,24 +1173,6 @@ namespace GeekDesk
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void ConfigApp(object sender, RoutedEventArgs e)
-        {
-            ConfigWindow.Show(appData.AppConfig, this);
-        }
-
-
-        /// <summary>
-        /// 右键任务栏图标打开程序目录
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OpenThisDir(object sender, RoutedEventArgs e)
-        {
-            Process p = new Process();
-            p.StartInfo.FileName = "Explorer.exe";
-            p.StartInfo.Arguments = "/e,/select," + Constants.APP_DIR + Constants.MY_NAME + ".exe";
-            p.Start();
-        }
 
 
 
@@ -1298,36 +1257,6 @@ namespace GeekDesk
         /// <summary>
         /// 右键任务栏图标退出
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ExitApp(object sender, RoutedEventArgs e)
-        {
-            if (appData.AppConfig.SecondsWindow == true)
-            {
-                MouseHookThread.Dispose();
-            }
-            Application.Current.Shutdown();
-        }
-        /// <summary>
-        /// 重启
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public void ReStartApp(object sender, RoutedEventArgs e)
-        {
-            ProcessUtil.ReStartApp();
-        }
-
-        /// <summary>
-        /// 关闭托盘图标
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void CloseBarIcon(object sender, RoutedEventArgs e)
-        {
-            appData.AppConfig.ShowBarIcon = false;
-        }
-
 
         public void OnKeyDown(object sender, KeyEventArgs e)
         {
@@ -1394,14 +1323,6 @@ namespace GeekDesk
         /// <summary>
         /// 打开屏幕拾色器
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ColorPicker(object sender, RoutedEventArgs e)
-        {
-            TaskbarContextMenu.IsOpen = false;
-            GlobalColorPickerWindow.CreateNoShow();
-        }
-
         private void Window_GotFocus(object sender, RoutedEventArgs e)
         {
             // 如果没有在修改菜单 并且不是右键点击了面板
@@ -1432,19 +1353,6 @@ namespace GeekDesk
         /// <summary>
         /// 备份数据文件
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        [Obsolete]
-        private void BakDataFile(object sender, RoutedEventArgs e)
-        {
-            Thread t = new Thread(() =>
-            {
-                CommonCode.BakAppData();
-            });
-            t.ApartmentState = ApartmentState.STA;
-            t.Start();
-        }
-
         private void AppButton_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             //点击了面板

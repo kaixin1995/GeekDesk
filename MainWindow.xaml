@@ -270,22 +270,7 @@
                         </ot:PasswordDialog>
                     </Grid>
 
-                    <hc:NotifyIcon Icon="/Logo.ico" Click="NotifyIcon_Click" x:Name="BarIcon"
-                            Visibility="{Binding AppConfig.ShowBarIcon, Mode=TwoWay, Converter={StaticResource Boolean2VisibilityConverter}}">
-                        <hc:NotifyIcon.ContextMenu>
-                            <ContextMenu Width="130" x:Name="TaskbarContextMenu">
-                                <MenuItem Header="打开面板" Click="ShowApp"/>
-                                <MenuItem Header="拾色器" Click="ColorPicker"/>
-                                <MenuItem Header="备份" Click="BakDataFile"/>
-                                <MenuItem Header="隐藏图标" Click="CloseBarIcon"/>
-                                <MenuItem Header="待办" Click="BacklogMenuClick"/>
-                                <MenuItem Header="程序目录" Click="OpenThisDir"/>
-                                <MenuItem Header="设置" Click="ConfigApp"/>
-                                <MenuItem Header="重启" Click="ReStartApp"/>
-                                <MenuItem Header="退出" Click="ExitApp"/>
-                            </ContextMenu>
-                        </hc:NotifyIcon.ContextMenu>
-                    </hc:NotifyIcon>
+                    <!-- 托盘图标已迁移至独立宿主窗口 TrayHostWindow (见 Window_Loaded 中 EnsureTray) -->
 
                     <!-- 第 3 行：音速启动风格底部常用工具栏 -->
                     <Border Grid.Row="2" Background="#F1F3F5" BorderBrush="#D1D5DB" BorderThickness="0,1,0,0" x:Name="BottomToolbarBorder">
